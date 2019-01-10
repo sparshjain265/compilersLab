@@ -10,7 +10,7 @@ state 0:
 	EXPS	goto 1
 	PROGRAM	goto 13
 
-	.	reduce by rule 3
+	.	reduce by rule 2
 
 
 state 1:
@@ -67,7 +67,7 @@ state 5:
 	EXP	goto 2
 	EXPS	goto 9
 
-	.	reduce by rule 3
+	.	reduce by rule 2
 
 
 state 6:
@@ -105,11 +105,11 @@ state 8:
 
 state 9:
 
-	EXPS : EXP NEWLINE EXPS .  (reduce by rule 2)
+	EXPS : EXP NEWLINE EXPS .  (reduce by rule 3)
 
 
 
-	.	reduce by rule 2
+	.	reduce by rule 3
 
 
 state 10:
