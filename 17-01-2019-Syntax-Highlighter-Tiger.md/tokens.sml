@@ -3,9 +3,9 @@ struct
 	type position						= int * int
 	type token							= string * string
 	fun KEYWORDS 		(i, j)	x	= (x , "blue"		)
-	fun WHITESPACE 	(i, j)	x	= (x , "red"		)
+	fun WHITESPACE 	(i, j)	x	= (x , "default"	)
 	fun ILLEGAL 		(i, j)	x	= (x , "red"		)
-	fun NEWLINE 		(i, j)	x	= (x , "red"		)
+	fun NEWLINE 		(i, j)	x	= (x , "default"	)
 	fun SYMBOLS 		(i, j)	x	= (x , "white"		)
 	fun STRING 			(i, j)	x	= (x , "yellow"	)
 	fun COMMENT 		(i, j)	x	= (x , "green"		)
