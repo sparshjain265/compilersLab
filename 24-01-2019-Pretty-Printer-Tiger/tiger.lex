@@ -48,14 +48,23 @@ symbols 	= "," | ":" | ";"
 
 d 			= [0-9]+;
 
+newline	= "\n\r" | "\r\n" | "\r" | "\n";
+
+escapes	= [abfnrtv]
+			| "num"
+			| "xnum"
+			| "\\"
+			| "\""
+			| "character";
+
 %%
 
-"/*".*"*/"								=> (current_pos := yypos - !pos_last_line															; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
-("\"")(\\. | [^\\"])*("\"")		=> (current_pos := yypos - !pos_last_line															; Tokens.STRING		(!current_pos , !lineNum) yytext );
-\n											=> (lineNum := !lineNum+1 ; linePos := yypos :: !linePos	; pos_last_line := yypos	; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
-[-+]?{d}([.]{d})?([eE][-+]?{d})?	=> (current_pos := yypos - !pos_last_line															; Tokens.NUMERIC		(!current_pos , !lineNum) yytext );
-{keywords}								=> (current_pos := yypos - !pos_last_line															; Tokens.KEYWORDS		(!current_pos , !lineNum) yytext );
-{ws}+										=> (current_pos := yypos - !pos_last_line															; Tokens.WHITESPACE	(!current_pos , !lineNum) yytext );
-{symbols}								=> (current_pos := yypos - !pos_last_line															; Tokens.SYMBOLS		(!current_pos , !lineNum) yytext );
-[a-zA-Z_][a-zA-Z0-9_]*				=> (current_pos := yypos - !pos_last_line															; Tokens.IDENTIFIER	(!current_pos , !lineNum) yytext );
-.											=> (current_pos := yypos - !pos_last_line															; Tokens.ILLEGAL		(!current_pos , !lineNum) yytext );
+<INITIAL> "/*".*"*/"									=> (current_pos := yypos - !pos_last_line															; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
+<INITIAL> ("\"")(\\{escapes}|[^\\"])*("\"")	=> (current_pos := yypos - !pos_last_line															; Tokens.STRING		(!current_pos , !lineNum) yytext );
+<INITIAL> {newline}									=> (lineNum := !lineNum+1 ; linePos := yypos :: !linePos	; pos_last_line := yypos	; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
+<INITIAL> [-+]?{d}([.]{d})?([eE][-+]?{d})?		=> (current_pos := yypos - !pos_last_line															; Tokens.NUMERIC		(!current_pos , !lineNum) yytext );
+<INITIAL> {keywords}									=> (current_pos := yypos - !pos_last_line															; Tokens.KEYWORDS		(!current_pos , !lineNum) yytext );
+<INITIAL> {ws}+											=> (current_pos := yypos - !pos_last_line															; Tokens.WHITESPACE	(!current_pos , !lineNum) yytext );
+<INITIAL> {symbols}									=> (current_pos := yypos - !pos_last_line															; Tokens.SYMBOLS		(!current_pos , !lineNum) yytext );
+<INITIAL> [a-zA-Z_][a-zA-Z0-9_]*					=> (current_pos := yypos - !pos_last_line															; Tokens.IDENTIFIER	(!current_pos , !lineNum) yytext );
+<INITIAL> .												=> (current_pos := yypos - !pos_last_line															; Tokens.ILLEGAL		(!current_pos , !lineNum) yytext );
