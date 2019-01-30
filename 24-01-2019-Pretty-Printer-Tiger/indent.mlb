@@ -1,0 +1,9 @@
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
+
+tokens.sml
+print.sml
+error.sml
+tiger.lex.sml
+formatter.sml
+highlight.sml

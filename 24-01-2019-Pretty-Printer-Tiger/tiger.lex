@@ -17,6 +17,7 @@ fun eof() = let
 				end
 
 fun updateCurrent yypos = (current_pos := yypos - !pos_last_line)
+fun updateLine		yypos = (linePos := yypos :: !linePos)
 
 fun incr r = (r := !r + 1)
 fun decr	r = (r := !r - 1)
@@ -70,18 +71,16 @@ endComment		= "*/";
 commentSymbols = "/*" | "*/";
 
 %%
-<INITIAL> {newline}									=> (incr lineNum ; linePos := yypos :: !linePos	; pos_last_line := yypos	; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
-
-<INITIAL> {startComment}							=> (updateCurrent yypos	; YYBEGIN COMMENT ; incr commentNo ; Tokens.COMMENT (!current_pos, !lineNum) yytext);
-<COMMENT> {startComment}							=> (updateCurrent yypos	; incr commentNo ; Tokens.COMMENT (!current_pos, !lineNum) yytext);
-<COMMENT> {endComment}								=> (updateCurrent yypos	; decr commentNo ; if (!commentNo > 0) then (Tokens.COMMENT (!current_pos, !lineNum) yytext) else (YYBEGIN INITIAL ; Tokens.COMMENT (!current_pos, !lineNum) yytext) );
-<COMMENT> {newline}									=> (incr lineNum ; linePos := yypos :: !linePos	; pos_last_line := yypos	; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
-<COMMENT> .												=> (updateCurrent yypos	; Tokens.COMMENT (!current_pos, !lineNum) yytext);  
-
-<INITIAL> ("\"")(\\{escapes}|[^\\"])*("\"")	=> (updateCurrent yypos	; Tokens.STRING		(!current_pos , !lineNum) yytext );
-<INITIAL> [-+]?{d}([.]{d})?([eE][-+]?{d})?	=> (updateCurrent yypos	; Tokens.NUMERIC		(!current_pos , !lineNum) yytext );
-<INITIAL> {keywords}									=> (updateCurrent yypos	; Tokens.KEYWORDS		(!current_pos , !lineNum) yytext );
-<INITIAL> {ws}+										=> (updateCurrent yypos	; Tokens.WHITESPACE	(!current_pos , !lineNum) yytext );
-<INITIAL> {symbols}									=> (updateCurrent yypos	; Tokens.SYMBOLS		(!current_pos , !lineNum) yytext );
-<INITIAL> [a-zA-Z_][a-zA-Z0-9_]*					=> (updateCurrent yypos	; Tokens.IDENTIFIER	(!current_pos , !lineNum) yytext );
-<INITIAL> .												=> (updateCurrent yypos	; Tokens.ILLEGAL		(!current_pos , !lineNum) yytext );
+<INITIAL> {newline}									=> (incr lineNum 			; updateLine yypos	; pos_last_line := yypos										; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
+<INITIAL> {startComment}							=> (updateCurrent yypos	; YYBEGIN COMMENT 	; incr commentNo 													; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
+<COMMENT> {startComment}							=> (updateCurrent yypos	; incr commentNo 																				; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
+<COMMENT> {endComment}								=> (updateCurrent yypos	; decr commentNo 		; if (!commentNo = 0) then (YYBEGIN INITIAL) else ()	; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
+<COMMENT> {newline}									=> (incr lineNum 			; updateLine yypos	; pos_last_line := yypos										; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
+<COMMENT> .												=> (updateCurrent yypos																										; Tokens.COMMENT 		(!current_pos , !lineNum) yytext );  
+<INITIAL> ("\"")(\\{escapes}|[^\\"])*("\"")	=> (updateCurrent yypos																										; Tokens.STRING		(!current_pos , !lineNum) yytext );
+<INITIAL> [-+]?{d}([.]{d})?([eE][-+]?{d})?	=> (updateCurrent yypos																										; Tokens.NUMERIC		(!current_pos , !lineNum) yytext );
+<INITIAL> {keywords}									=> (updateCurrent yypos																										; Tokens.KEYWORDS		(!current_pos , !lineNum) yytext );
+<INITIAL> {ws}+										=> (updateCurrent yypos																										; Tokens.WHITESPACE	(!current_pos , !lineNum) yytext );
+<INITIAL> {symbols}									=> (updateCurrent yypos																										; Tokens.SYMBOLS		(!current_pos , !lineNum) yytext );
+<INITIAL> [a-zA-Z_][a-zA-Z0-9_]*					=> (updateCurrent yypos																										; Tokens.IDENTIFIER	(!current_pos , !lineNum) yytext );
+<INITIAL> .												=> (updateCurrent yypos																										; Tokens.ILLEGAL		(!current_pos , !lineNum) yytext );

@@ -3,13 +3,17 @@
 %.lex.sml	: %.lex
 				mllex $<
 
-all 			: highlight
+# similar for .grm
+%.grm.sml	: %.grm
+				mlyacc $<
+
+all 			: indent
 
 clean 		: 
-				rm -rf *.lex.sml highlight
+				rm -rf *.lex.sml indent
 
-highlight	: tokens.sml print.sml error.sml tiger.lex.sml formatter.sml highlight.sml highlight.mlb
-				mlton highlight.mlb
+indent		: tokens.sml print.sml error.sml tiger.lex.sml formatter.sml highlight.sml indent.mlb
+				mlton indent.mlb
 
 test 			: all
-				${CURDIR}/highlight < tester
+				${CURDIR}/indent < tester
