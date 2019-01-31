@@ -1,0 +1,23 @@
+
+
+%%
+
+%pos int
+%eop EOF
+
+%name Tiger
+
+%term CONST of int
+	|	PLUS
+	|	EOF
+
+%noshift EOF
+
+%nonterm EXP of Ast.Expr
+
+%left PLUS
+
+%%
+
+EXP	: CONST			(Ast.Const CONST)
+		| EXP PLUS EXP	(Ast.plus EXP1 EXP2)

@@ -3,14 +3,14 @@
 structure Ast = struct 
 
 	datatype Expr = Const of int
-						Op of Expr * BinOp * Expr
+					|	Op of Expr * BinOp * Expr
 
 		and	BinOp = Plus
 
-	fun binOpDenote Plus x y = x + y
+	fun binOpDenote Plus x y = x + y;
 
 	fun	exprDenote (Const x) 		= x
-		|	exprDenote (Op (x, op, y)) = binOpDenote op (exprDenote x) (exprDenote y)
+		|	exprDenote (Op (x, oper, y)) = binOpDenote oper (exprDenote x) (exprDenote y);
 
 	fun	binOpToString Plus = "+"
 

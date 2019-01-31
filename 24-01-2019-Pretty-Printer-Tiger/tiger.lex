@@ -1,29 +1,30 @@
-type lexresult = Tokens.token
+type pos			= int
 
-type pos 			= int
-val current_pos 	= ref 0
+type svalue        = Tokens.svalue
+type ('a,'b) token = ('a,'b) Tokens.token
+type lexresult     = (svalue,pos) token
+
+type p 			= int
+val current_p 	= ref 0
 val pos_last_line	= ref 1
-
+val current_pos 	= ref (1, 0)
 val lineNum 	= ErrorMsg.lineNum
 val linePos 	= ErrorMsg.linePos
 fun err(p1,p2)	= ErrorMsg.error p1
 
 val commentNo	= ref 0
 
-fun eof() = let 
-					val pos = hd(!linePos) 
-				in 
-					Tokens.EOF(pos,!lineNum) ""  
-				end
+fun eof() = Tokens.EOF(!current_pos)
 
-fun updateCurrent yypos = (current_pos := yypos - !pos_last_line)
+fun updateCurrent yypos = (current_p := yypos - !pos_last_line; current_pos := (!lineNum, !current_p))
 fun updateLine		yypos = (linePos := yypos :: !linePos)
+fun incrementLine ()		= (lineNum := !lineNum + 1; current_pos := (!lineNum, !current_p))
 
 fun incr r = (r := !r + 1)
 fun decr	r = (r := !r - 1)
 
 %% 
-%structure TigerLex
+%header (functor TigerLexFun(structure Tokens : Tiger_TOKENS));
 %s COMMENT;
 
 ws = [\ \t];
@@ -71,16 +72,9 @@ endComment		= "*/";
 commentSymbols = "/*" | "*/";
 
 %%
-<INITIAL> {newline}									=> (incr lineNum 			; updateLine yypos	; pos_last_line := yypos										; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
-<INITIAL> {startComment}							=> (updateCurrent yypos	; YYBEGIN COMMENT 	; incr commentNo 													; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
-<COMMENT> {startComment}							=> (updateCurrent yypos	; incr commentNo 																				; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
-<COMMENT> {endComment}								=> (updateCurrent yypos	; decr commentNo 		; if (!commentNo = 0) then (YYBEGIN INITIAL) else ()	; Tokens.COMMENT		(!current_pos , !lineNum) yytext );
-<COMMENT> {newline}									=> (incr lineNum 			; updateLine yypos	; pos_last_line := yypos										; Tokens.NEWLINE		(!current_pos , !lineNum) yytext );
-<COMMENT> .												=> (updateCurrent yypos																										; Tokens.COMMENT 		(!current_pos , !lineNum) yytext );  
-<INITIAL> ("\"")(\\{escapes}|[^\\"])*("\"")	=> (updateCurrent yypos																										; Tokens.STRING		(!current_pos , !lineNum) yytext );
-<INITIAL> [-+]?{d}([.]{d})?([eE][-+]?{d})?	=> (updateCurrent yypos																										; Tokens.NUMERIC		(!current_pos , !lineNum) yytext );
-<INITIAL> {keywords}									=> (updateCurrent yypos																										; Tokens.KEYWORDS		(!current_pos , !lineNum) yytext );
-<INITIAL> {ws}+										=> (updateCurrent yypos																										; Tokens.WHITESPACE	(!current_pos , !lineNum) yytext );
-<INITIAL> {symbols}									=> (updateCurrent yypos																										; Tokens.SYMBOLS		(!current_pos , !lineNum) yytext );
-<INITIAL> [a-zA-Z_][a-zA-Z0-9_]*					=> (updateCurrent yypos																										; Tokens.IDENTIFIER	(!current_pos , !lineNum) yytext );
-<INITIAL> .												=> (updateCurrent yypos																										; Tokens.ILLEGAL		(!current_pos , !lineNum) yytext );
+
+<INITIAL> {newline}	=> ( lex() );
+<INITIAL> {ws}+		=> ( lex() );
+
+<INITIAL> {d}+			=> (Tokens.CONST	(Option.valOf(Int.fromString yytext), !lineNum, !current_p));
+<INITIAL> "+"			=> (Tokens.PLUS	(!lineNum, !current_p));

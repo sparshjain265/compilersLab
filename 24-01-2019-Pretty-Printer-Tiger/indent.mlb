@@ -1,9 +1,11 @@
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
 
-tokens.sml
-print.sml
 error.sml
+tigerAst.sml
+pretty.sml
+tiger.grm.sig
+tiger.grm.sml
 tiger.lex.sml
-formatter.sml
-highlight.sml
+
+indent.sml

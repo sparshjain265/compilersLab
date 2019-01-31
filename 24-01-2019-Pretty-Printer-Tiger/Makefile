@@ -10,10 +10,10 @@
 all 			: indent
 
 clean 		: 
-				rm -rf *.lex.sml indent
+				rm -rf *.lex.sml *.grm.sml *.grm.sig indent
 
-indent		: tokens.sml print.sml error.sml tiger.lex.sml formatter.sml highlight.sml indent.mlb
+indent		: indent.sml indent.mlb tiger.grm.sml tiger.lex.sml tigerAst.sml pretty.sml error.sml
 				mlton indent.mlb
 
 test 			: all
-				${CURDIR}/indent < tester
+				${CURDIR}/indent < test.tig
