@@ -28,7 +28,7 @@ struct
 	(* The portion of the code that does the actual compiling *)
 
 	val (program,_) 	= TigerParser.parse (0,thisLexer,print_error,())
-	val printable		= Pretty.pretty program
+	val printable		= map (fn x => (Pretty.pretty x; print("\n"))) program
 	(* val _					= TextIO.output(TextIO.stdOut, Machine.programToString executable) *)
 
 end

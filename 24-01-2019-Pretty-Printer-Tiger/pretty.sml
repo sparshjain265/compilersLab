@@ -3,8 +3,9 @@ struct
 
 	type Expr = Ast.Expr
 
-	fun	pretty (Ast.Const x) 		= (print((Int.toString x) ^ " "))
-		|	pretty (Ast.Op (x, oper, y)) = (pretty x; print((Ast.binOpToString oper) ^ " "); pretty y)
+	fun	pretty (Ast.Const x) 			= (print((Int.toString x)))
+		|	pretty (Ast.Var x)				= (print x)
+		|	pretty (Ast.Op (x, oper, y))	= (pretty x; print(" " ^ (Ast.binOpToString oper) ^ " "); pretty y)
 
 end
 

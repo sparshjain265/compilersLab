@@ -10,7 +10,7 @@
 all 			: indent
 
 clean 		: 
-				rm -rf *.lex.sml *.grm.sml *.grm.sig indent
+				rm -rf *.lex.sml *.grm.sml *.grm.sig *.grm.desc indent
 
 indent		: indent.sml indent.mlb tiger.grm.sml tiger.lex.sml tigerAst.sml pretty.sml error.sml
 				mlton indent.mlb

@@ -2,24 +2,7 @@
 
 structure Ast = struct 
 
-	datatype Program	= 	EXP of Exp
-							|	DECS of Dec list
-	
-		and Exp	=	(* literals *)
-							NIL
-						|	INTEGER of int
-						|	STRING of string
-							(* Array and record creations *)
-
-		(* and Decs	=	Dec list *)
-
-		and Dec	=	string
-
-
-
-
-
-	(* datatype Expr =	Const of int
+	datatype Expr =	Const of int
 						|	Var of string
 						|	Op of Expr * BinOp * Expr
 
@@ -45,6 +28,6 @@ structure Ast = struct
 	fun plus		a b	= Op (a, Plus, b)
 	fun minus	a b	= Op (a, Minus, b)
 	fun mul		a b	= Op (a, Mul, b)
-	fun divide	a b	= Op (a, Div, b) *)
+	fun divide	a b	= Op (a, Div, b)
 
 end
