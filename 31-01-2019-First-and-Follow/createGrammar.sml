@@ -1,10 +1,10 @@
-val t = addSymbol "a"
-val t = addSymbol "b"
-val t = addToken "S"
-val t = addToken "B"
-val t = addRule "S" [["a", "B"]]
-val t = addRule "B" [["b"]]
-
-val p = printSymbols();
-val p = printTokens();
-val p = printRules();
+structure myGrammar = Grammar
+val t = myGrammar.addSymbol "a"
+val t = myGrammar.addSymbol "b"
+val t = myGrammar.addToken "S"
+val t = myGrammar.addToken "B"
+val t = myGrammar.addRule "S" [["a", "B"], ["a"]]
+val t = myGrammar.addRule "B" [["b"]]
+val p = myGrammar.printSymbols();
+val p = myGrammar.printTokens();
+val p = myGrammar.printRules();
