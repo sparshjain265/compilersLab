@@ -94,7 +94,7 @@ structure Grammar = struct
 	(* function to print all the rules of a symbol*)
 	fun printRule (A, x) = 	let
 										val l = RHSSet.listItems x
-										fun f x = (print(Atom.toString A); print(" " ^ "->" ^ " "); printAtomList x)
+										fun f x = (printAtom A; print(" " ^ "->" ^ " "); printAtomList x)
 									in
 										map f l
 									end
