@@ -58,6 +58,6 @@ structure flGrammar = struct
 	fun findFollowIter 1 = followOfGrammar ()
 	|	findFollowIter n = (firstOfGrammar; findFollowIter (n-1))
 
-	fun findFollow () = (initialAllSymbolsFollow(); findFollowIter (AtomSet.numItems(!symbols)))
+	fun findFollow () = (initialAllSymbolsFollow(); findFollowIter (AtomSet.numItems(!symbols) * AtomSet.numItems(!tokens)))
 
 end

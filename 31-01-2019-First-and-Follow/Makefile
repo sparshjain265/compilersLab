@@ -1,19 +1,31 @@
-all				:	createGrammar printGrammar nullable printNullable
+all				:	createGrammar printGrammar nullable printNullable first printFirst follow printFollow
 
 createGrammar	:	grammar.sml createGrammar.sml createGrammar.mlb
 					mlton createGrammar.mlb
 
-printGrammar	:	grammar.sml createGrammar.sml printGrammar.sml printGrammar.mlb
+printGrammar	:	createGrammar printGrammar.sml printGrammar.mlb
 					mlton printGrammar.mlb
 
-nullable		:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml nullable.mlb
+nullable		:	createGrammar nullable.sml nullable.mlb
 					mlton nullable.mlb
 
-printNullable	:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml printNullable.sml printNullable.mlb
+printNullable	:	printGrammar nullable printNullable.sml printNullable.mlb
 					mlton printNullable.mlb
 
-test			:	printNullable
-					${CURDIR}/printNullable
+first			:	nullable first.sml first.mlb
+					mlton first.mlb
+
+printFirst		:	printNullable first printFirst.sml printFirst.mlb
+					mlton printFirst.mlb
+
+follow			:	first follow.sml follow.mlb
+					mlton follow.mlb
+
+printFollow		:	printFirst follow printFollow.sml printFollow.mlb
+					mlton printFollow.mlb
+
+test			:	printFollow
+					${CURDIR}/printFollow
 
 clean			:
-					rm -rf createGrammar printGrammar nullable printNullable
+					rm -rf createGrammar printGrammar nullable printNullable first printFirst follow printFollow

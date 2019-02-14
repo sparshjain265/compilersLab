@@ -3,3 +3,5 @@ $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 grammar.sml
 createGrammar.sml
 nullable.sml
+first.sml
+follow.sml
