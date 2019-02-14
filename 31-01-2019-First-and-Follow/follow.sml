@@ -56,7 +56,7 @@ structure flGrammar = struct
 	fun followOfGrammar () = map followFromRule (AtomMap.listItemsi(!rules))
 
 	fun findFollowIter 1 = followOfGrammar ()
-	|	findFollowIter n = (firstOfGrammar; findFollowIter (n-1))
+	|	findFollowIter n = (firstOfGrammar (); findFollowIter (n-1))
 
 	fun findFollow () = (initialAllSymbolsFollow(); findFollowIter (AtomSet.numItems(!symbols) * AtomSet.numItems(!tokens)))
 

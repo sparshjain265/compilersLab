@@ -3,25 +3,25 @@ all				:	createGrammar printGrammar nullable printNullable first printFirst foll
 createGrammar	:	grammar.sml createGrammar.sml createGrammar.mlb
 					mlton createGrammar.mlb
 
-printGrammar	:	createGrammar printGrammar.sml printGrammar.mlb
+printGrammar	:	grammar.sml createGrammar.sml printGrammar.sml printGrammar.mlb
 					mlton printGrammar.mlb
 
-nullable		:	createGrammar nullable.sml nullable.mlb
+nullable		:	grammar.sml createGrammar.sml nullable.sml nullable.mlb
 					mlton nullable.mlb
 
-printNullable	:	printGrammar nullable printNullable.sml printNullable.mlb
+printNullable	:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml printNullable.sml printNullable.mlb
 					mlton printNullable.mlb
 
-first			:	nullable first.sml first.mlb
+first			:	grammar.sml createGrammar.sml nullable.sml first.sml first.mlb
 					mlton first.mlb
 
-printFirst		:	printNullable first printFirst.sml printFirst.mlb
+printFirst		:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml printNullable.sml first.sml printFirst.sml printFirst.mlb
 					mlton printFirst.mlb
 
-follow			:	first follow.sml follow.mlb
+follow			:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml follow.mlb
 					mlton follow.mlb
 
-printFollow		:	printFirst follow printFollow.sml printFollow.mlb
+printFollow		:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml printNullable.sml first.sml printFirst.sml follow.sml printFollow.sml printFollow.mlb
 					mlton printFollow.mlb
 
 test			:	printFollow

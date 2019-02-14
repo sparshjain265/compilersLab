@@ -61,7 +61,7 @@ structure fGrammar = struct
 	fun firstOfGrammar () = map firstOfRule (AtomMap.listItemsi(!rules))
 
 	fun findFirstIter 1 = firstOfGrammar ()
-	|	findFirstIter n = (firstOfGrammar; findFirstIter (n-1))
+	|	findFirstIter n = (firstOfGrammar (); findFirstIter (n-1))
 
 	fun findFirst () = (firstOfAllTokens(); initialAllSymbols(); findFirstIter (AtomSet.numItems(!symbols) * AtomSet.numItems(!tokens)))
 
