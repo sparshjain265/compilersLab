@@ -45,5 +45,6 @@ structure nGrammar = struct
 									findNullable ()
 							end
 	
-	(* val t = (findNullable() ; printAtomSet (!nullable)) *)
+	fun printNullable () = printAtomSet (!nullable)
+
 end
