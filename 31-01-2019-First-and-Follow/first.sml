@@ -32,7 +32,7 @@ structure fGrammar = struct
 	*)
 	fun firstOfAtomList [] 		=	AtomSet.empty
 	|	firstOfAtomList (x::xs)	=	if (* if x is nullable, find first of x and xs, and return the union*)
-										AtomSet.member(!nullable, x)
+										AtomSet.member((!nullable), x)
 									then
 										let
 											val f1 = AtomMap.lookup((!firstOfAll), x)
@@ -57,7 +57,7 @@ structure fGrammar = struct
 								(map addInTemp l; firstOfAll := AtomMap.insert((!firstOfAll), A, AtomSet.union(AtomMap.lookup((!firstOfAll), A), (!temp))))
 							end
 
-	(* Goes through the whole grammar once to update the rules *)
+	(* Goes through the whole grammar once to update the first *)
 	fun firstOfGrammar () = map firstOfRule (AtomMap.listItemsi(!rules))
 
 	fun findFirstIter 1 = firstOfGrammar ()
