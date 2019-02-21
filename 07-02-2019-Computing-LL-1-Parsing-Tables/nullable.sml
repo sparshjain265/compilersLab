@@ -8,7 +8,7 @@ structure nGrammar = struct
 	fun checkSetMember S x = AtomSet.member(S, x)
 
 	(* nullable is a set of nullable symbols*)
-	val nullable = ref AtomSet.empty
+	val nullable = ref (AtomSet.singleton (Atom.atom "epsilon"))
 
 	(* Takes a list of atoms/symbols-tokens and returns true if all are nullable *)
 	(* Takes a production and returns true if it is nullable *)

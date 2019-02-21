@@ -5,7 +5,7 @@ structure fGrammar = struct
 	val n = findNullable ()
 
 	(* first of all is a map from atom (symbol or token) to set of atoms (set of tokens) *)
-	val firstOfAll : AtomSet.set AtomMap.map ref = ref AtomMap.empty
+	val firstOfAll : AtomSet.set AtomMap.map ref = ref (AtomMap.singleton (Atom.atom "epsilon", AtomSet.empty))
 
 	(* Populate the map with tokens for first of tokens *)
 	fun firstOfToken x = (firstOfAll := AtomMap.insert ( (!firstOfAll), x, AtomSet.fromList([x]) ) )

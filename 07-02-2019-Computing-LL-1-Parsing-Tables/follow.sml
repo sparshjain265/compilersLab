@@ -5,7 +5,7 @@ structure flGrammar = struct
 	val f = findFirst ()
 
 	(* follow of all is a map from atom (symbol or token) to set of atoms (set of tokens) *)
-	val followOfAll : AtomSet.set AtomMap.map ref = ref AtomMap.empty
+	val followOfAll : AtomSet.set AtomMap.map ref = ref (AtomMap.singleton (Atom.atom "epsilon", AtomSet.empty))
 
 	(* Populate the map with empty for first of symbols *)
 	fun initialSymbolFollow x = (followOfAll := AtomMap.insert ( (!followOfAll), x, AtomSet.empty ) )
