@@ -51,6 +51,6 @@ structure ll1 = struct
 										in
 											(map f l; printLL1 xs)
 										end
-	val t1 = findLL1()
-	val t2 = printLL1(!LL1)
+	
+	fun printEntries() = printLL1(!LL1)
 end
