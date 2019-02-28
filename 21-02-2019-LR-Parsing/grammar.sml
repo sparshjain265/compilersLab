@@ -16,7 +16,7 @@ structure Grammar = struct
 										then LESS 
 										else EQUAL *)
 
-		fun 	compare ([], [])			= EQUAL
+		fun 	compare ([], [])		= EQUAL
 			|	compare ([], x)			= LESS
 			|	compare (x, [])			= GREATER
 			|	compare (x::xs, y::ys)	= case Atom.compare (x, y) of
