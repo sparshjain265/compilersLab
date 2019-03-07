@@ -95,6 +95,32 @@ struct
 									printItemSet value
 								)
 			
+			fun printReduce value = 
+				let
+					val itemList = ItemSet.listItems value
+					fun printReduceOnce i = 
+						let
+							val l = #lhs i
+							val b = #before i
+							val a = #after i
+						in
+							if
+								List.null a
+							then
+								(
+									print "Reduce by ";
+									printAtom l;
+									print " -> ";
+									printAtomList b
+								)
+							else
+								()
+						end
+				in
+					map printReduceOnce itemList
+				end	
+				
+
 			fun g (key, value) = 
 				let
 					val nexts = AtomMap.lookup((!edges), key)
@@ -105,7 +131,7 @@ struct
 							(
 								print "Shift on ";
 								printAtom x;
-								print "To State ";
+								print " to State ";
 								printAtom y;
 								print "\n"
 							)
@@ -120,7 +146,8 @@ struct
 				in
 					(
 						f(key, value);
-						(* h(key, getState value); *)
+						printReduce value;
+						map h nexts;
 						print "\n"
 					)
 				end
@@ -140,8 +167,6 @@ struct
 			map f (stateMap.listItemsi x)
 		end
 
-	(* val p = printAtomToState(!AtomToStateMap) *)
-
 	(* takes a state and generates states for shift and goto actions *)
 	fun genStateOne I = 
 		let
@@ -149,9 +174,27 @@ struct
 			fun f input = 
 				let
 					val newState = nextState (I, input)
-					val prevEdge = AtomMap.lookup((!edges), getState I)
+				
 				in
-					edges := AtomMap.insert((!edges), getState I, (input, getState newState) :: prevEdge)
+					if
+						ItemSet.equal(newState, ItemSet.empty)
+					then
+						()
+					else
+						let
+							val prevEdge = AtomMap.lookup((!edges), getState I)
+							val e = (input, getState newState)
+							fun g ((x,y):eType) = Atom.same(x, input) andalso Atom.same(y, getState newState)
+							val newEdge : eType list = if
+															List.exists g prevEdge
+														then
+															prevEdge
+														else 
+															e :: prevEdge
+
+						in
+							edges := AtomMap.insert((!edges), getState I, newEdge)
+						end
 				end
 		in
 			map f ins
@@ -178,8 +221,7 @@ struct
 		end
 	
 
-	val t = genStateOne startState
-	(* val t = genAllStates() *)
+	val t = genAllStates()
 	val p = printAtomToState(!AtomToStateMap)
 
 end
