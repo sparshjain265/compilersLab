@@ -30,8 +30,11 @@ ll1				:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml ll1.sml
 printLL1Entries	:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml printNullable.sml first.sml printFirst.sml follow.sml printFollow.sml ll1.sml printLL1Entries.sml printLL1Entries.mlb
 					mlton printLL1Entries.mlb
 
+lr0				:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml lr0Item.sml lr0states.sml lr0.mlb
+					mlton lr0.mlb
+
 test			:	printLL1Entries
 					./printLL1Entries
 
 clean			:
-					rm -rf createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries
+					rm -rf createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries lr0

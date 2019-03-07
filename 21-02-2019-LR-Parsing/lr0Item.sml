@@ -127,10 +127,10 @@ val t = printItem aItem *)
 			|	_		=> closureFull t
 		end
 
-	val t = closureFull(ItemSet.singleton({lhs = Atom.atom "S", before = [], after = List.map Atom.atom ["E", "$"]}))
+	(* val t = closureFull(ItemSet.singleton({lhs = Atom.atom "S", before = [], after = List.map Atom.atom ["E", "$"]}))
 	val t1 = ItemSet.add(t, {lhs = Atom.atom "E'", before = List.map Atom.atom ["+", "T"], after = List.map Atom.atom ["E'"]})
 	val t2 = closureFull(t1)
-	val p = printItemSet t2
+	val p = printItemSet t2 *)
 
 
 end
