@@ -33,6 +33,15 @@ printLL1Entries	:	grammar.sml createGrammar.sml printGrammar.sml nullable.sml pr
 lr0				:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml lr0Item.sml lr0states.sml lr0.sml lr0.mlb
 					mlton lr0.mlb
 
+slr1			:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml lr0Item.sml lr0states.sml slr1.sml slr1.mlb
+					mlton slr1.mlb
+
+testLR0			:	lr0
+					./lr0
+
+testSLR1		:	slr1
+					./slr1
+
 test			:	printLL1Entries
 					./printLL1Entries
 
