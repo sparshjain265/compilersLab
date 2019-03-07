@@ -1,4 +1,4 @@
-all				:	createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries
+all				:	createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries lr0 slr1 lr1
 
 createGrammar	:	grammar.sml createGrammar.sml createGrammar.mlb
 					mlton createGrammar.mlb
@@ -52,4 +52,4 @@ test			:	printLL1Entries
 					./printLL1Entries
 
 clean			:
-					rm -rf createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries lr0
+					rm -rf createGrammar printGrammar nullable printNullable first printFirst follow printFollow ll1 printLL1Entries lr0 slr1 lr1
