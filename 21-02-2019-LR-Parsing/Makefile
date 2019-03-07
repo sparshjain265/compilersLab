@@ -42,8 +42,11 @@ testLR0			:	lr0
 testSLR1		:	slr1
 					./slr1
 
-lr1 			:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml lr1Item.sml lr1.mlb
+lr1 			:	grammar.sml createGrammar.sml nullable.sml first.sml follow.sml lr1Item.sml lr1states.sml lr1.sml lr1.mlb
 					mlton lr1.mlb
+
+testLR1 		:	lr1
+					./lr1
 
 test			:	printLL1Entries
 					./printLL1Entries

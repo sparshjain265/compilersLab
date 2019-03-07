@@ -1,6 +1,6 @@
-structure lr0 = 
+structure lr1 = 
 struct
-	open lr0states
+	open lr1states
 
 	(* number of states *)
 	val nStates = ref 0
@@ -43,6 +43,7 @@ struct
 					val l = #lhs y
 					val b = #before y
 					val a = #after y
+					val w = #wait y
 				in
 					if
 						List.null(a)
@@ -51,6 +52,23 @@ struct
 					else
 						let
 							val z = List.hd a
+
+							val waitList = AtomSet.listItems w
+							val tail = List.tl a
+							
+							fun getNewWaitListOne v = firstOfAtomList(tail @ [v])
+							val newWaitList = 
+												if
+													List.null waitList
+												then
+													[firstOfAtomList tail]
+												else
+													map getNewWaitListOne waitList
+							
+							fun getNewWait [] = AtomSet.empty
+							|	getNewWait (v :: vs) = AtomSet.union(v, getNewWait vs)
+							val newWait = getNewWait newWaitList
+
 						in
 							if
 								Atom.same(z, x)
@@ -59,7 +77,8 @@ struct
 									val item = {
 										lhs = l,
 										before = z :: b,
-										after = List.tl a
+										after = List.tl a,
+										wait = newWait
 									}
 								in
 									newSet := ItemSet.union((!newSet), ItemSet.singleton item)
@@ -80,7 +99,8 @@ struct
 	val startItem = {
 						lhs = Atom.atom "S'",
 						before = List.map Atom.atom [],
-						after = start
+						after = start,
+						wait = AtomSet.empty
 					}
 
 	val startState = closureFull(ItemSet.singleton startItem)
@@ -103,15 +123,18 @@ struct
 							val l = #lhs i
 							val b = #before i
 							val a = #after i
+							val w = #wait i
 						in
 							if
-								List.null a
+								List.null a andalso not (AtomSet.isEmpty w)
 							then
 								(
 									print "Reduce by ";
 									printAtom l;
 									print " -> ";
-									printAtomList (List.rev b)
+									map printAtom (List.rev b);
+									print " on input ";
+									printAtomSet w
 								)
 							else
 								()

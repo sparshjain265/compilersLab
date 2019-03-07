@@ -1,4 +1,4 @@
-structure lr0Item = struct
+structure lr1Item = struct
 	open flGrammar
 
 	(* find follow *)

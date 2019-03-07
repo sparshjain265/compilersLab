@@ -1,8 +1,6 @@
-$ + * N 
-S' E E' T T'
-S' > E $
-E > T E'
-E' > + T E' | epsilon
-T > N T'
-T' > * N T' | epsilon
+$ c
+S' S B
+S' > S $
+S > B
+B > c
 
