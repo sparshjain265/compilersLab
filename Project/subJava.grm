@@ -1,0 +1,191 @@
+open AST;
+
+%%
+%name subJava
+%eop EOF
+%pure
+
+%term EOF	| ASSIGN
+			| PLUS
+			| MINUS
+			| MUL
+			| DIV
+			| AND
+			| OR
+			| NOT
+			| EQUAL
+			| NOTEQUAL
+			| LESS
+			| LESSEQUAL
+			| GREATER
+			| GREATEREQUAL
+
+			| SEMICOLON
+			| COMMA
+			| DOT
+			| LPARA
+			| RPARA
+			| LBRACE
+			| RBRACE
+			| LBRACKET
+			| RBRACKET
+
+			| BOOL
+			| CLASS
+			| ELSE
+			| FALSE
+			| IF
+			| INT
+			| LENGTH
+			| MAIN
+			| NEW
+			| PUBLIC
+			| RETURN
+			| STATIC
+			| STRING
+			| PRINT 
+			| THIS
+			| TRUE
+			| VOID
+			| WHILE
+
+			| NUMBER of int
+			| ID of string
+			| STRINGLITERAL of string
+
+%nonterm go of Program
+		| Prog of ClassDec list
+		| ClassDecl of ClassDec 
+		| VarDecl of VarDec
+		| VarDecls of (VarDec list -> VarDec list)
+		| MethodDecl of MethodDec
+		| MethodDecls of MethodDec list
+		| FormalParams of Formal list
+		| Formal of Formal
+		| Type of Type
+		| BType of Basic
+		| Statement of Stmt
+		| Statements of Stmt list
+		| Expr of Exp
+		| ExpList of Exp list
+		| Number of Constant
+  
+%pos int
+%start go
+%eop EOF
+%verbose
+
+%nonassoc ID
+%right ASSIGN
+%left OR
+%left AND
+%left EQUAL NOTEQUAL LESS LESSEQUAL GREATER GREATEREQUAL
+%left PLUS MINUS
+%left MUL DIV
+%right NOT
+%nonassoc LBRACKET RBRACKET DOT
+%nonassoc NEW LPARA RPARA
+%nonassoc ELSE	(* this will shift else binding it with inner if *)
+
+%%
+
+go	: Prog EOF (Program(Prog1))
+
+Prog: ClassDecl 		([ClassDecl1])
+	| ClassDecl Prog 	(ClassDecl1 :: Prog1)
+
+ClassDecl	: CLASS ID LBRACE VarDecls MethodDecls RBRACE (ClassDec(ID1, VarDecls1 [], MethodDecls1))
+
+VarDecls	: 					(fn acc => acc)
+			| VarDecls VarDecl	(fn acc => VarDecls1(VarDecl1 :: acc))
+
+VarDecl	: Type ID SEMICOLON 			(VarDec(Type1, ID1, NONE))
+		| Type ID ASSIGN Expr SEMICOLON	(VarDec(Type1, ID1, SOME Expr1))
+
+MethodDecls	:							([])
+			| MethodDecl MethodDecls	(MethodDecl1 :: MethodDecls1)
+
+MethodDecl	: PUBLIC Type ID LPARA FormalParams RPARA
+				LBRACE VarDecls Statements RBRACE		(MethodDec(Type1, ID1, FormalParams1, VarDecls1 [], Statements1))
+			| PUBLIC STATIC VOID MAIN LPARA STRING LBRACKET RBRACKET ID RPARA
+				LBRACE VarDecls Statements RBRACE		(MethodDec(voidType, "main",[Formal(objType "String", ID1)], VarDecls1 [], Statements1))
+
+FormalParams	: Formal				([Formal1])
+				| Formal FormalParams	(Formal1 :: FormalParams1)
+
+Formal	: Type ID (Formal(Type1, ID1))
+
+Type	: BType						(basicType BType1)
+		| BType LBRACKET RBRACKET 	(arrayType BType1)
+		| ID						(objType ID1)
+		| VOID						(voidType)
+
+BType	: BOOL	(Bool)
+		| INT	(Int)
+
+Statements	: 							([])
+			|	Statement Statements	(Statement1 :: Statements1)
+
+Statement	: LBRACE Statements RBRACE	(Block Statements1)
+
+			| 			ID 							ASSIGN Expr SEMICOLON	(Assign(NONE		, ID1, NONE			, Expr1))
+			| Expr DOT 	ID 							ASSIGN Expr SEMICOLON	(Assign(SOME Expr1	, ID1, NONE			, Expr2))
+			| 			ID LBRACKET Expr RBRACKET 	ASSIGN Expr SEMICOLON	(Assign(NONE		, ID1, SOME Expr1	, Expr2))
+			| Expr DOT 	ID LBRACKET Expr RBRACKET 	ASSIGN Expr SEMICOLON	(Assign(SOME Expr1	, ID1, SOME Expr2	, Expr3))
+
+			| 			ID LPARA ExpList RPARA SEMICOLON	(CallStmt(This, ID1, ExpList1))
+			| Expr DOT 	ID LPARA ExpList RPARA SEMICOLON	(CallStmt(Expr1, ID1, ExpList1))
+
+			| IF LPARA Expr RPARA Statement					(If(Expr1, Statement1, Block []))
+			| IF LPARA Expr RPARA Statement ELSE Statement	(If(Expr1, Statement1, Statement2))
+
+			| WHILE LPARA Expr RPARA Statement	(While(Expr1, Statement1))
+			
+			| PRINT LPARA 				RPARA SEMICOLON	(PrintS "")
+			| PRINT LPARA Expr 			RPARA SEMICOLON	(PrintE Expr1)
+			| PRINT LPARA STRINGLITERAL RPARA SEMICOLON	(PrintS STRINGLITERAL1)
+
+			| RETURN SEMICOLON		(Return NONE)
+			| RETURN Expr SEMICOLON	(Return (SOME Expr1))
+
+ExpList	:	Expr						([Expr1])
+		|	Expr COMMA ExpList			(Expr1 :: ExpList1)
+
+Expr	: Number	(Const Number1)
+
+		| Expr PLUS		Expr %prec PLUS 	(BINOP(ADD, Expr1, Expr2))
+		| Expr MINUS	Expr %prec MINUS 	(BINOP(SUB, Expr1, Expr2))
+		| Expr MUL 		Expr %prec MUL 		(BINOP(MUL, Expr1, Expr2))
+		| Expr DIV 		Expr %prec DIV	 	(BINOP(DIV, Expr1, Expr2))
+		| Expr AND 		Expr %prec AND	 	(BINOP(AND, Expr1, Expr2))
+		| Expr OR 		Expr %prec OR	 	(BINOP(OR, Expr1, Expr2))
+
+		| Expr EQUAL		Expr %prec EQUAL	 	(RELOP(EQ, Expr1, Expr2))
+		| Expr NOTEQUAL		Expr %prec NOTEQUAL	 	(RELOP(NE, Expr1, Expr2))
+		| Expr LESS			Expr %prec LESS	 		(RELOP(LT, Expr1, Expr2))
+		| Expr LESSEQUAL	Expr %prec LESSEQUAL	(RELOP(LE, Expr1, Expr2))
+		| Expr GREATER 		Expr %prec GREATER	 	(RELOP(GT, Expr1, Expr2))
+		| Expr GREATEREQUAL	Expr %prec GREATEREQUAL	(RELOP(GE, Expr1, Expr2))
+
+		| NOT Expr	(NOT(Expr1))
+
+		| Expr LBRACKET Expr RBRACKET	(ArrayElement(Expr1, Expr2))
+		| Expr DOT LENGTH				(ArrayLength(Expr1))
+		
+		| Expr DOT	ID LPARA ExpList RPARA	(Call(Expr1, ID1, ExpList1))
+		|			ID LPARA ExpList RPARA	(Call(This, ID1, ExpList1))
+
+		| Expr DOT ID	(Member(Expr1, ID1))
+
+		| ID	(Var(ID1))
+
+		| NEW BType LBRACKET Expr RBRACKET	(NewArray(BType1, Expr1))
+		| NEW ID LPARA RPARA				(NewObject(ID1))
+
+		| LPARA Expr RPARA					(Expr1)
+
+		| THIS 								(This)
+
+Number	: NUMBER	(Cint NUMBER1)
+		| TRUE		(Cbool true)
+		| FALSE		(Cbool false)
