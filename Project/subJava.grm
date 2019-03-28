@@ -110,8 +110,8 @@ MethodDecl	: PUBLIC Type ID LPARA FormalParams RPARA
 			| PUBLIC STATIC VOID MAIN LPARA STRING LBRACKET RBRACKET ID RPARA
 				LBRACE VarDecls Statements RBRACE		(MethodDec(voidType, "main",[Formal(objType "String", ID1)], VarDecls1 [], Statements1))
 
-FormalParams	: Formal				([Formal1])
-				| Formal FormalParams	(Formal1 :: FormalParams1)
+FormalParams	: Formal					([Formal1])
+				| Formal COMMA FormalParams	(Formal1 :: FormalParams1)
 
 Formal	: Type ID (Formal(Type1, ID1))
 

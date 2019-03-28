@@ -74,10 +74,11 @@ ws    = [\ \t];
 "void"								=> (updateChar 4; VOID(!lineRef, !charRef));
 "while"								=> (updateChar 5; WHILE(!lineRef, !charRef));
 
-"//".*\n							=> (updateLine 1; resetChar(); lex());
+"//".*								=> (lex());
 
 [0-9]+								=> (updateChar (String.size yytext); NUMBER(valOf (Int.fromString yytext), !lineRef, !charRef));
 [_a-zA-Z][_0-9a-zA-Z]*				=> (updateChar (String.size yytext); ID(yytext, !lineRef, !charRef));
-"\""[\032\033\035-\126]"*\""		=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) -1), !lineRef, !charRef));
+("\"")(\\. | [^\\"])*("\"")			=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) -1), !lineRef, !charRef));
+
 
 .									=> (error("Bad Character: [" ^ yytext ^ "]\n", !lineRef, !charRef); lex());
