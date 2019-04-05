@@ -104,12 +104,18 @@ fun printExp (Const c) 				= printConstant c
 		val t2 = printExp e2
 	in
 		if t1 = t2 then
-			if t1 = (basicType Int) then
-				t1
-			else
-				(isError := true; print_red "Illegal Expression! Binary Operations only allowed on integers"; basicType Int)
+			if (bop = ADD orelse bop = SUB orelse bop = MUL orelse bop = DIV) then
+				if t1 = (basicType Int) then
+					t1
+				else
+					(isError := true; print_red "Illegal Expression! Operation only allowed on integers"; basicType Int)
+			else 
+				if t1 = (basicType Bool) then
+					t1
+				else
+					(isError := true; print_red "Illegal Expression! Operation only allowed on bools"; basicType Bool)
 		else
-			(isError := true; print_red "Type mismatch! Both operands should be integers"; basicType Int)
+			(isError := true; print_red "Type mismatch! Both operands should be of same type"; basicType Int)
 	end
 |	printExp (RELOP(rop, e1, e2)) 	= 
 		let
@@ -280,7 +286,9 @@ fun printStatement (Block xlist) =
 	let
 		val p1 = (printTabs(); print "if(")
 		val t = printExp e
-		val p2 = (print ") then\n";	more();	printStatement s1; less())
+		fun f (Block _) = printStatement s1
+		|	f _			= (more(); printStatement s1; less())
+		val p2 = (print ") then\n";	f s1)
 	in
 		if (t = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
 	end
@@ -288,17 +296,17 @@ fun printStatement (Block xlist) =
 	let
 		val p1 = (printTabs(); print "if(")
 		val t1 = printExp e
+
+		fun f (Block x) = printStatement (Block x)
+		|	f s			= (more(); printStatement s; less())
+
 		val p3 = 
 		(
 			print ") then\n";
-			more();
-			printStatement s1;
-			less();
+			f s1;
 			printTabs();
 			print "else";
-			more();
-			printStatement s2;
-			less()
+			f s2
 		)
 	in
 		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
@@ -307,12 +315,13 @@ fun printStatement (Block xlist) =
 	let
 		val p1 = (printTabs(); print "while(")
 		val t1 = printExp e
+		fun f (Block _) = printStatement s
+		|	f _			= (more(); printStatement s; less())
+
 		val p2 = 
 		(
 			print ")\n";
-			more();
-			printStatement s;
-			less()
+			f s
 		)
 	in
 		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")

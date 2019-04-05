@@ -24,61 +24,67 @@ fun eof   ()      = Tokens.EOF (!lineRef,!charRef)
 
 %%
 %header (functor subJavaLexFun(structure Tokens : subJava_TOKENS));
+%s COMMENT;
 ws    = [\ \t];
+newline	= "\n\r" | "\r\n" | "\r" | "\n";
 %%
 
-\n									=> (updateLine 1; resetChar(); lex() );
-{ws}+                              	=> (updateChar (String.size yytext); lex() );
+<INITIAL> {newline}							=> (updateLine 1; resetChar(); lex() );
+<INITIAL> {ws}+                             => (updateChar (String.size yytext); lex() );
 
-"="									=> (updateChar 1; ASSIGN(!lineRef , !charRef));
-"+"									=> (updateChar 1; PLUS(!lineRef, !charRef));
-"-"									=> (updateChar 1; MINUS(!lineRef, !charRef));
-"*"									=> (updateChar 1; MUL(!lineRef, !charRef));
-"/"									=> (updateChar 1; DIV(!lineRef, !charRef));
-"&&"								=> (updateChar 2; AND(!lineRef, !charRef));
-"||"								=> (updateChar 2; OR(!lineRef, !charRef));
-"!"									=> (updateChar 1; NOT(!lineRef, !charRef));
-"=="								=> (updateChar 2; EQUAL(!lineRef, !charRef));
-"!="								=> (updateChar 2; NOTEQUAL(!lineRef, !charRef));
-"<"									=> (updateChar 1; LESS(!lineRef, !charRef));
-"<="								=> (updateChar 2; LESSEQUAL(!lineRef, !charRef));
-">"									=> (updateChar 1; GREATER(!lineRef, !charRef));
-">="								=> (updateChar 2; GREATEREQUAL(!lineRef, !charRef));
+<INITIAL> "="								=> (updateChar 1; ASSIGN(!lineRef , !charRef));
+<INITIAL> "+"								=> (updateChar 1; PLUS(!lineRef, !charRef));
+<INITIAL> "-"								=> (updateChar 1; MINUS(!lineRef, !charRef));
+<INITIAL> "*"								=> (updateChar 1; MUL(!lineRef, !charRef));
+<INITIAL> "/"								=> (updateChar 1; DIV(!lineRef, !charRef));
+<INITIAL> "&&"								=> (updateChar 2; AND(!lineRef, !charRef));
+<INITIAL> "||"								=> (updateChar 2; OR(!lineRef, !charRef));
+<INITIAL> "!"								=> (updateChar 1; NOT(!lineRef, !charRef));
+<INITIAL> "=="								=> (updateChar 2; EQUAL(!lineRef, !charRef));
+<INITIAL> "!="								=> (updateChar 2; NOTEQUAL(!lineRef, !charRef));
+<INITIAL> "<"								=> (updateChar 1; LESS(!lineRef, !charRef));
+<INITIAL> "<="								=> (updateChar 2; LESSEQUAL(!lineRef, !charRef));
+<INITIAL> ">"								=> (updateChar 1; GREATER(!lineRef, !charRef));
+<INITIAL> ">="								=> (updateChar 2; GREATEREQUAL(!lineRef, !charRef));
 
-";"									=> (updateChar 1; SEMICOLON(!lineRef, !charRef));
-","									=> (updateChar 1; COMMA(!lineRef, !charRef));
-"."									=> (updateChar 1; DOT(!lineRef, !charRef));
-"("									=> (updateChar 1; LPARA(!lineRef, !charRef));
-")"									=> (updateChar 1; RPARA(!lineRef, !charRef));
-"{"                                 => (updateChar 1; LBRACE(!lineRef, !charRef));
-"}"                                 => (updateChar 1; RBRACE(!lineRef, !charRef));
-"["                                 => (updateChar 1; LBRACKET(!lineRef, !charRef));
-"]"                                 => (updateChar 1; RBRACKET(!lineRef, !charRef));
+<INITIAL> ";"								=> (updateChar 1; SEMICOLON(!lineRef, !charRef));
+<INITIAL> ","								=> (updateChar 1; COMMA(!lineRef, !charRef));
+<INITIAL> "."								=> (updateChar 1; DOT(!lineRef, !charRef));
+<INITIAL> "("								=> (updateChar 1; LPARA(!lineRef, !charRef));
+<INITIAL> ")"								=> (updateChar 1; RPARA(!lineRef, !charRef));
+<INITIAL> "{"                               => (updateChar 1; LBRACE(!lineRef, !charRef));
+<INITIAL> "}"                               => (updateChar 1; RBRACE(!lineRef, !charRef));
+<INITIAL> "["                               => (updateChar 1; LBRACKET(!lineRef, !charRef));
+<INITIAL> "]"                               => (updateChar 1; RBRACKET(!lineRef, !charRef));
 
-"boolean"							=> (updateChar 7; BOOL(!lineRef, !charRef));
-"class"								=> (updateChar 5; CLASS(!lineRef, !charRef));
-"else"								=> (updateChar 4; ELSE(!lineRef, !charRef));
-"false"								=> (updateChar 5; FALSE(!lineRef, !charRef));
-"if"								=> (updateChar 2; IF(!lineRef, !charRef));
-"int"								=> (updateChar 3; INT(!lineRef, !charRef));
-"length"							=> (updateChar 6; LENGTH(!lineRef, !charRef));
-"main"								=> (updateChar 4; MAIN(!lineRef, !charRef));
-"new"								=> (updateChar 3; NEW(!lineRef, !charRef));
-"public"							=> (updateChar 6; PUBLIC(!lineRef, !charRef));
-"return"							=> (updateChar 6; RETURN(!lineRef, !charRef));
-"static"							=> (updateChar 6; STATIC(!lineRef, !charRef));
-"String"							=> (updateChar 6; STRING(!lineRef, !charRef));
-"System.out.println"				=> (updateChar 18; PRINT(!lineRef, !charRef));
-"this"								=> (updateChar 4; THIS(!lineRef, !charRef));
-"true"								=> (updateChar 4; TRUE(!lineRef, !charRef));
-"void"								=> (updateChar 4; VOID(!lineRef, !charRef));
-"while"								=> (updateChar 5; WHILE(!lineRef, !charRef));
+<INITIAL> "boolean"							=> (updateChar 7; BOOL(!lineRef, !charRef));
+<INITIAL> "class"							=> (updateChar 5; CLASS(!lineRef, !charRef));
+<INITIAL> "else"							=> (updateChar 4; ELSE(!lineRef, !charRef));
+<INITIAL> "false"							=> (updateChar 5; FALSE(!lineRef, !charRef));
+<INITIAL> "if"								=> (updateChar 2; IF(!lineRef, !charRef));
+<INITIAL> "int"								=> (updateChar 3; INT(!lineRef, !charRef));
+<INITIAL> "length"							=> (updateChar 6; LENGTH(!lineRef, !charRef));
+<INITIAL> "main"							=> (updateChar 4; MAIN(!lineRef, !charRef));
+<INITIAL> "new"								=> (updateChar 3; NEW(!lineRef, !charRef));
+<INITIAL> "public"							=> (updateChar 6; PUBLIC(!lineRef, !charRef));
+<INITIAL> "return"							=> (updateChar 6; RETURN(!lineRef, !charRef));
+<INITIAL> "static"							=> (updateChar 6; STATIC(!lineRef, !charRef));
+<INITIAL> "String"							=> (updateChar 6; STRING(!lineRef, !charRef));
+<INITIAL> "System.out.println"				=> (updateChar 18; PRINT(!lineRef, !charRef));
+<INITIAL> "this"							=> (updateChar 4; THIS(!lineRef, !charRef));
+<INITIAL> "true"							=> (updateChar 4; TRUE(!lineRef, !charRef));
+<INITIAL> "void"							=> (updateChar 4; VOID(!lineRef, !charRef));
+<INITIAL> "while"							=> (updateChar 5; WHILE(!lineRef, !charRef));
 
-"//".*								=> (lex());
+<INITIAL> "//".*							=> (lex());
+<INITIAL> "/*"								=> (YYBEGIN COMMENT; lex());
+<COMMENT> .									=> (lex());
+<COMMENT> {newline}							=> (updateLine 1; resetChar(); lex());
+<COMMENT> "*/"								=> (YYBEGIN INITIAL; lex());
 
-[~]?[0-9]+								=> (updateChar (String.size yytext); NUMBER(valOf (Int.fromString yytext), !lineRef, !charRef));
-[_a-zA-Z][_0-9a-zA-Z]*				=> (updateChar (String.size yytext); ID(yytext, !lineRef, !charRef));
-("\"")(\\. | [^\\"])*("\"")			=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) - 2), !lineRef, !charRef));
+<INITIAL> [~]?[0-9]+						=> (updateChar (String.size yytext); NUMBER(valOf (Int.fromString yytext), !lineRef, !charRef));
+<INITIAL> [_a-zA-Z][_0-9a-zA-Z]*			=> (updateChar (String.size yytext); ID(yytext, !lineRef, !charRef));
+<INITIAL> ("\"")(\\. | [^\\"])*("\"")		=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) - 2), !lineRef, !charRef));
 
 
-.									=> (error("Bad Character: [" ^ yytext ^ "]\n", !lineRef, !charRef); lex());
+<INITIAL> .									=> (error("Bad Character: [" ^ yytext ^ "]\n", !lineRef, !charRef); lex());

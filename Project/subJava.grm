@@ -73,6 +73,7 @@ open AST;
 %pos int
 %start go
 %eop EOF
+%noshift EOF
 %verbose
 
 %nonassoc ID
@@ -89,7 +90,7 @@ open AST;
 
 %%
 
-go	: Prog EOF (Program(Prog1))
+go	: Prog (Program(Prog1))
 
 Prog: ClassDecl 		([ClassDecl1])
 	| ClassDecl Prog 	(ClassDecl1 :: Prog1)

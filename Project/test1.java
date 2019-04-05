@@ -1,10 +1,13 @@
+/*
+/*
 class A {
 	int a;
 	public int b(int k)
 	{
-		return 0;
+		// return 0; 
 	}
 }
+*/
 
 class test01 { 
 	int c;
@@ -27,7 +30,7 @@ class test01 {
 		int a;
 		if(a < 0)
 			a = 5;
-		while(true)
+		while(true && a < b())
 		{
 			a = a;
 			a = b();
@@ -39,3 +42,4 @@ class test01 {
 		System.out.println(true); 
 	} 
 }
+
