@@ -26,6 +26,6 @@ fun print_error (s,i:int, j:int) = TextIO.output(TextIO.stdErr,
 					    "Error, line " ^ (Int.toString i) ^ "." ^ (Int.toString j) ^ ", " ^ s ^ "\n")
 
 val (program,_) = subJavaParser.parse (0,thisLexer,print_error,())
-val printable  = Semantic.printProgram program
+val check  = Semantic.printProgram program
 
 end (* struct Driver *)

@@ -12,12 +12,29 @@ fun printTabs () = (n := !indent ; print_t () )
 (* Printing *)
 open AST
 
+val isError = ref false;
 val level = ref 0;
 fun nextLevel () = (level := (!level) + 1)
 fun prevLevel () = (level := (!level) - 1)
 val variableList : (ID * Type * int) list ref = ref []
 val functionList : (ID * Type * int) list ref = ref []
-val functionMap : (Type list) AtomMap.map ref = ref AtomMap.empty
+
+structure funKey : ORD_KEY = 
+struct
+	type ord_key = Atom.atom * Atom.atom
+
+	fun compare ((x1, y1), (x2, y2)) = case Atom.compare(x1, x2) of
+											LESS => LESS
+										|	GREATER => GREATER
+										|	EQUAL => Atom.compare(y1, y2)
+end
+
+structure classFunMap = RedBlackMapFn(funKey)
+
+val functionMap : (Type list) classFunMap.map ref = ref classFunMap.empty
+
+val classList : ID list ref = ref []
+val classMap : ((ID * Type * int) list) AtomMap.map ref = ref AtomMap.empty
 
 fun deleteFunLevel L = 
 	if List.null (!functionList) then
@@ -57,7 +74,7 @@ fun printBasic Bool = (print "bool"; basicType Bool)
 
 fun printType (basicType b) = (printBasic b; basicType b)
 |	printType (arrayType b) = (printBasic b; print "[]"; arrayType b)
-|	printType (objType id)	= (print id; objType id)
+|	printType (objType id)	= (print "class "; print id; objType id)
 |	printType voidType		= (print "void"; voidType)
 
 fun printBinop ADD = print "+"
@@ -90,9 +107,9 @@ fun printExp (Const c) 				= printConstant c
 			if t1 = (basicType Int) then
 				t1
 			else
-				(print_red "Illegal Expression! Binary Operations only allowed on integers"; basicType Int)
+				(isError := true; print_red "Illegal Expression! Binary Operations only allowed on integers"; basicType Int)
 		else
-			(print_red "Type mismatch! Both operands should be integers"; basicType Int)
+			(isError := true; print_red "Type mismatch! Both operands should be integers"; basicType Int)
 	end
 |	printExp (RELOP(rop, e1, e2)) 	= 
 		let
@@ -106,9 +123,9 @@ fun printExp (Const c) 				= printConstant c
 				if t1 = (basicType Int) then
 					basicType Bool
 				else
-					(print_red "Illegal Expression! Binary Comparisions only allowed on integers"; basicType Bool)
+					(isError := true; print_red "Illegal Expression! Binary Comparisions only allowed on integers"; basicType Bool)
 			else
-				(print_red "Type mismatch! Both operands should be integers"; basicType Bool)
+				(isError := true; print_red "Type mismatch! Both operands should be integers"; basicType Bool)
 		end
 |	printExp (NOT(e)) 				= 
 		let
@@ -117,12 +134,12 @@ fun printExp (Const c) 				= printConstant c
 			if t = (basicType Bool) then
 				t
 			else
-				(print_red "Type mismatch! Logical Not can only be applied on booleans"; basicType Bool)
+				(isError := true; print_red "Type mismatch! Logical Not can only be applied on booleans"; basicType Bool)
 		end
 |	printExp (ArrayElement(e1, e2))	= 
 		let
 			fun g (arrayType t) = t
-			|	g _				= (print_red "Attempted to access element of a non array type!";Int)
+			|	g _				= (isError := true; print_red "Attempted to access element of a non array type!";Int)
 			val t1 = g (printExp e1)
 			val p1 = print "["
 			val t2 = printExp e2
@@ -131,12 +148,12 @@ fun printExp (Const c) 				= printConstant c
 			if t2 = (basicType Int) then
 				basicType t1
 			else
-				(print_red "Array Indices should be integers"; basicType t1)					
+				(isError := true; print_red "Array Indices should be integers"; basicType t1)					
 		end 
 |	printExp (ArrayLength(e)) 		= 
 		let
 			fun g (arrayType t) = arrayType t
-			|	g _				= (print_red "Attempted to find length of non Array type!"; voidType)
+			|	g _				= (isError := true; print_red "Attempted to find length of non Array type!"; voidType)
 			val t = g (printExp e)
 			val p = print".length"
 		in
@@ -144,27 +161,36 @@ fun printExp (Const c) 				= printConstant c
 		end 
 |	printExp (Call(e, id, eList)) 	=
 		let
-			fun g (objType t) = objType t
-			|	g _	= (print_red "Attempted to call a function from a non-object!"; voidType)
+			fun g (objType ob) = ob
+			|	g _	= (isError := true; print_red "Attempted to call a function from a non-object!"; "this")
 			val t1 = g (printExp e)
 			val tList = (print "."; print id; print "("; printExps eList)
 			val p1 = print ")"
 			fun f (a, _, _) = (a = id)
-			val t = List.find f (!functionList)
+			val funList = if t1 = "this" then SOME (!functionList) else AtomMap.find(!classMap, Atom.atom t1)
+			val t = if funList = NONE then NONE else List.find f (valOf funList)
 		in
 			if t = NONE then
-				(print_red "Attempted to call a non - defined function"; voidType)
+				(isError := true; print_red "Attempted to call a non - defined function"; voidType)
 			else
 				let
 					val (a, b, c) = valOf t
-					val fList = AtomMap.lookup(!functionMap, Atom.atom id)
+					val fList = classFunMap.lookup(!functionMap, (Atom.atom t1, Atom.atom id))
 				in
-					if tList = fList then b else (print_red "Types of Formal Arguments don't match"; b)
+					if tList = fList then b else (isError := true; print_red "Formal Arguments don't match"; b)
 				end
 		end 
 |	printExp (NewArray(b, e)) 		= (print "new "; printBasic b; print "["; printExp e; print "]"; arrayType b)
 |	printExp (NewObject(id)) 		= (print "new "; print id; print"()"; objType id)
-|	printExp (Member(e, id)) 		= (printExp e; print "."; printExp (Var(id)))
+|	printExp (Member(e, id)) 		= 
+		let
+			val t = (printExp e; print "."; printExp (Var(id)))
+		in
+			if e = This then
+				(t)
+			else
+				(isError := true; print_red "Illegal attempt to access class member!"; t)
+		end
 |	printExp This					= (print "this"; objType "this")
 |	printExp (Var(id)) 				= 
 		let
@@ -173,7 +199,7 @@ fun printExp (Const c) 				= printConstant c
 			val t = List.find f (!variableList)
 		in
 			if t = NONE then
-				(print_red "Undefined variable used!"; voidType)
+				(isError := true; print_red "Undefined variable used!"; voidType)
 			else
 				let
 					val (a, b, c) = valOf t
@@ -200,7 +226,7 @@ fun printStatement (Block xlist) =
 		more();
 		map printStatement xlist;
 		less();
-		printTabs;
+		printTabs();
 		print "}\n"
 	)
 |	printStatement (Assign(e1, id, e2, e)) = 
@@ -224,30 +250,39 @@ fun printStatement (Block xlist) =
 		val t2 = printExp e
 		val p3 = print ";"
 	in
-		if (t1 = t2) then (print "\n") else (print_red "Type Mismatch in assignment!\n")
+		if (t1 = t2) then (print "\n") else (isError := true; print_red "Type Mismatch in assignment!\n")
 	end
 |	printStatement (CallStmt(e, id, elist)) = 
-	let
-		val p1 = printTabs()
-		val p2 = (printExp e; print "."; print id)
-		val p2 = print "("
-		val tList = printExps elist
-		val p3 = print ");\n"
+	(* let *)
+	(
+		printTabs();
+		printExp (Call(e, id, elist));
+		print ";\n"
+	)
+		(* fun g (objType ob) = ob
+		|	g _	= (isError := true; print_red "Attempted to call a function from a non-object!"; "this")
+		val t1 = g (printExp e)
+		val tList = (print "."; print id; print "("; printExps eList)
+		val p1 = print ");\n"
+		fun f (a, _, _) = (a = id)
+		val funList = if t1 = "this" then SOME (!functionList) else AtomMap.find(!classMap, Atom.atom t1)
+		val t = if funList = NONE then NONE else List.find f (valOf funList)
+		
 		val fList = 
 			if (AtomMap.find(!functionMap, Atom.atom id) = NONE) then 
-				(print_red "Attempted to Call a non-defined function!\n"; []) 
+				(isError := true; print_red "Attempted to Call a non-defined function!\n"; []) 
 			else 
 				(valOf (AtomMap.find(!functionMap, Atom.atom id)))
 	in
-		if tList = fList then () else (print_red "Types of Formal Arguments Don't Match!\n")
-	end
+		if tList = fList then () else (isError := true; print_red "Formal Arguments Don't Match!\n")
+	end *)
 |	printStatement (If(e, s1, Block [])) = 
 	let
 		val p1 = (printTabs(); print "if(")
 		val t = printExp e
 		val p2 = (print ") then\n";	more();	printStatement s1; less())
 	in
-		if (t = basicType Bool) then () else (print_red "Condition not of bool type!\n")
+		if (t = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
 	end
 |	printStatement (If(e, s1, s2)) = 
 	let
@@ -266,7 +301,7 @@ fun printStatement (Block xlist) =
 			less()
 		)
 	in
-		if (t1 = basicType Bool) then () else (print_red "Condition not of bool type!\n")
+		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
 	end
 |	printStatement (While(e, s)) = 
 	let
@@ -280,7 +315,7 @@ fun printStatement (Block xlist) =
 			less()
 		)
 	in
-		if (t1 = basicType Bool) then () else (print_red "Condition not of bool type!\n")
+		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
 	end
 |	printStatement (PrintE e) = 
 	(
@@ -313,7 +348,7 @@ fun printVarDec (VarDec(typ, id, exp)) =
 		val p3 = print ";"
 		val v1 = (variableList := (id, typ, (!level)) :: (!variableList))
 	in
-		if(t1 = t2) then (print "\n") else (print_red "Type Mismatch in assignment!\n")
+		if(t1 = t2) then (print "\n") else (isError := true; print_red "Type Mismatch in assignment!\n")
 	end
 
 fun printFormal (Formal(typ, id)) = 
@@ -324,24 +359,26 @@ fun printFormal (Formal(typ, id)) =
 		(variableList := (id, typ, (!level)) :: (!variableList))
 	)
 
-fun mapFormal id (Formal(typ, _)) = 
+fun mapFormal className id (Formal(typ, _)) = 
 	let
-		val temp = if AtomMap.inDomain(!functionMap, Atom.atom id) then AtomMap.lookup(!functionMap, Atom.atom id) else []
+		val temp = if classFunMap.inDomain(!functionMap, (Atom.atom className, Atom.atom id)) then classFunMap.lookup(!functionMap, (Atom.atom className, Atom.atom id)) else []
 	in
-		(functionMap := AtomMap.insert(!functionMap, Atom.atom id, typ :: temp))
+		(functionMap := classFunMap.insert(!functionMap, (Atom.atom className, Atom.atom id), typ :: temp);
+		functionMap := classFunMap.insert(!functionMap, (Atom.atom "this", Atom.atom id), classFunMap.lookup(!functionMap, (Atom.atom className, Atom.atom id))))
 	end
 
-fun printFormals id [] 		= (functionMap := AtomMap.insert(!functionMap, Atom.atom id, []))
-|	printFormals id [x] 	= ((printFormal x); mapFormal id x)
-|	printFormals id (x::xs)	= (printFormal x; mapFormal id x; print ", "; printFormals id xs)
+fun printFormals className id [] 		= (functionMap := classFunMap.insert(!functionMap, (Atom.atom className, Atom.atom id), []); 
+											functionMap := classFunMap.insert(!functionMap, (Atom.atom "this", Atom.atom id), []))
+|	printFormals className id [x] 		= ((printFormal x); mapFormal className id x)
+|	printFormals className id (x::xs)	= (printFormal x; mapFormal className id x; print ", "; printFormals className id xs)
 
-fun printMethodDec (MethodDec(typ, "main", flist, vlist, slist)) = 
+fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) = 
 	(
 		printTabs();
 		print "public static void main(";
 		(functionList := ("main", voidType, (!level)) :: (!functionList));
 		levelUp ();
-		printFormals "main" flist;
+		printFormals className "main" flist;
 		print ")\n";
 		printTabs();
 		print "{\n";
@@ -353,7 +390,7 @@ fun printMethodDec (MethodDec(typ, "main", flist, vlist, slist)) =
 		print "}\n";
 		levelDown ()
 	)
-|	printMethodDec (MethodDec(typ, id, flist, vlist, slist)) = 
+|	printMethodDec className (MethodDec(typ, id, flist, vlist, slist)) = 
 	(
 		printTabs();
 		print "public ";
@@ -363,7 +400,7 @@ fun printMethodDec (MethodDec(typ, "main", flist, vlist, slist)) =
 		(functionList := (id, typ, (!level)) :: (!functionList));
 		print "(";
 		levelUp();
-		printFormals id flist;
+		printFormals className id flist;
 		print ")\n";
 		printTabs();
 		print "{\n";
@@ -377,10 +414,23 @@ fun printMethodDec (MethodDec(typ, "main", flist, vlist, slist)) =
 
 	)	
 
+fun printMethodDecs className [] = ()
+|	printMethodDecs className (x :: xs) = 
+	let
+		val t1 = printMethodDec className x
+		val t2 = printMethodDecs className xs
+		val MethodDec(typ, id, _, _, _) = x
+		val funList = AtomMap.lookup(!classMap, Atom.atom className)
+	in
+		(classMap := AtomMap.insert(!classMap, Atom.atom className, (id, typ, 0) :: funList))
+	end
+
 fun printClassDec (ClassDec (id, varDecList, methodDecList)) = 
 	(
 		printTabs();
 		print "class ";
+		(classList := id :: (!classList));
+		(classMap := AtomMap.insert(!classMap, Atom.atom id, []));
 		print id;
 		print "\n";
 		printTabs();
@@ -388,7 +438,7 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 		more();
 		levelUp();
 		map printVarDec varDecList;
-		map printMethodDec methodDecList;
+		printMethodDecs id methodDecList;
 		less();
 		printTabs();
 		print "}\n";
