@@ -1,5 +1,5 @@
 structure Semantic = struct
-
+open AST
 (* helpers *)
 open printColor
 val indent = ref 0
@@ -9,15 +9,15 @@ val n = ref 0
 fun print_t () = if !n = 0 then ( print("")) else (n := !n - 1 ; print ("\t") ; print_t ())
 fun printTabs () = (n := !indent ; print_t () )
 
-(* Printing *)
-open AST
-
 val isError = ref false;
 val level = ref 0;
 fun nextLevel () = (level := (!level) + 1)
 fun prevLevel () = (level := (!level) - 1)
 val variableList : (ID * Type * int) list ref = ref []
 val functionList : (ID * Type * int) list ref = ref []
+
+val retType : Type option ref = ref NONE
+val isReturned = ref false
 
 structure funKey : ORD_KEY = 
 struct
@@ -76,6 +76,7 @@ fun levelDown () =
 		prevLevel ()
 	end
 
+(* Printing *)
 
 fun printBasic Bool = (print "bool"; basicType Bool)
 |	printBasic Int	= (print "int"; basicType Int)
@@ -354,12 +355,16 @@ fun printStatement (Block xlist) =
 		print "\");\n"
 	)
 |	printStatement (Return e) = 
-	(
-		printTabs();
-		print "return";
-		if(isSome(e)) then (print " "; printExp(valOf e)) else (voidType);
-		print ";\n"
-	)
+	let
+		val p1 = (printTabs(); print "return")
+		val t1 = if(isSome(e)) then (print " "; printExp(valOf e)) else (voidType);
+		val p2 = print ";"
+	in
+		if t1 = valOf (!retType) then 
+			(print "\n"; isReturned := true) 
+		else
+			(isError := true; print_red "Doesn't match with function return type!\n")
+	end
 
 fun printVarDec (VarDec(typ, id, exp)) = 
 	let
@@ -406,6 +411,9 @@ fun printFormals className id [] 		= (functionMap := classFunMap.insert(!functio
 
 fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) = 
 	(
+		retType := SOME typ;
+		isReturned := false;
+		if typ = voidType then (isReturned := true) else ();
 		printTabs();
 		print "public static void main(";
 		let
@@ -430,11 +438,16 @@ fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) =
 		map printStatement slist;
 		less();
 		printTabs();
-		print "}\n";
+		print "}";
+		if (!isReturned) then (print "\n") else (isError := true; print_red "Function not returning!\n");
+		retType := NONE;
 		levelDown ()
 	)
 |	printMethodDec className (MethodDec(typ, id, flist, vlist, slist)) = 
 	(
+		retType := SOME typ;
+		isReturned := false;
+		if typ = voidType then (isReturned := true) else ();
 		printTabs();
 		print "public ";
 		printType typ;
@@ -462,9 +475,10 @@ fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) =
 		map printStatement slist;
 		less();
 		printTabs();
-		print "}\n";
+		print "}";
+		if (!isReturned) then (print "\n") else (isError := true; print_red "Function not returning!\n");
+		retType := NONE;
 		levelDown()
-
 	)	
 
 fun printMethodDecs className [] = ()

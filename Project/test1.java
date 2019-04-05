@@ -10,11 +10,10 @@ class A {
 class test01 { 
 	int c;
 
-	public int myFun(int a, boolean c)
+	public boolean myFun(int a, boolean c)
 	{
-		int k;
-		int b = k;
-		return 0;
+		if (a == 0)
+			return c;
 	}
 
 	public int b()
@@ -24,25 +23,26 @@ class test01 {
 
 	public void d()
 	{
-		return 0;
+		return;
 	}
 
 	public static void main(String[] args) {
-		A a = new A();
-		int bsharp;
+		A a;
+		int[] bsharp = new int[3];
 		int b;
 		
 		if(b < 0)
 			b = 5;
 		while(true && b < b())
 		{
-			a = a;
+			// a.b = a.b;
 			b = b();
 		}
-		a = new A();
+		// a = new A();
 		System.out.println("TEST01"); 
 		System.out.println(123); 
 		System.out.println(a.b(b)); 
+		System.out.println(bsharp[0]);
 		System.out.println(true); 
 	} 
 }
