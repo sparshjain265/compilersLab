@@ -16,6 +16,7 @@ fun prevLevel () = (level := (!level) - 1)
 val variableList : (ID * Type * int) list ref = ref []
 val functionList : (ID * Type * int) list ref = ref []
 
+val isMain = ref false
 val retType : Type option ref = ref NONE
 val isReturned = ref false
 
@@ -411,6 +412,7 @@ fun printFormals className id [] 		= (functionMap := classFunMap.insert(!functio
 
 fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) = 
 	(
+		if !isMain then (isError := true; printTabs(); print_red "Exactly one main function is allowed!\n") else (isMain := true);
 		retType := SOME typ;
 		isReturned := false;
 		if typ = voidType then (isReturned := true) else ();
@@ -512,7 +514,7 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 		levelDown()
 	)
 
-fun printProgram (Program x) = (map printClassDec x; !isError)
+fun printProgram (Program x) = (map printClassDec x; if (!isMain) then !isError else (isError := true; print_red "No main detected!\n"; !isError))
 
 (* fun compileProgram x = printProgram x *)
 
