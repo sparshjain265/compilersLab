@@ -214,6 +214,6 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 
 fun printProgram (Program x) = map printClassDec x
 
-fun compileProgram x = printProgram x
+(* fun compileProgram x = printProgram x *)
 
 end

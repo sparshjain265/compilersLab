@@ -1,9 +1,11 @@
 $(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 $(SML_LIB)/mlyacc-lib/mlyacc-lib.mlb
 
 printColor.sml
 ast.sml
 printer.sml
+semantic.sml
 subJava.grm.sig
 subJava.grm.sml
 subJava.lex.sml 

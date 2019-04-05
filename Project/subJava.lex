@@ -76,9 +76,9 @@ ws    = [\ \t];
 
 "//".*								=> (lex());
 
-[0-9]+								=> (updateChar (String.size yytext); NUMBER(valOf (Int.fromString yytext), !lineRef, !charRef));
+[~]?[0-9]+								=> (updateChar (String.size yytext); NUMBER(valOf (Int.fromString yytext), !lineRef, !charRef));
 [_a-zA-Z][_0-9a-zA-Z]*				=> (updateChar (String.size yytext); ID(yytext, !lineRef, !charRef));
-("\"")(\\. | [^\\"])*("\"")			=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) -1), !lineRef, !charRef));
+("\"")(\\. | [^\\"])*("\"")			=> (updateChar (String.size yytext); STRINGLITERAL(String.substring(yytext, 1, (String.size yytext) - 2), !lineRef, !charRef));
 
 
 .									=> (error("Bad Character: [" ^ yytext ^ "]\n", !lineRef, !charRef); lex());

@@ -68,7 +68,7 @@ open AST;
 		| Statements of Stmt list
 		| Expr of Exp
 		| ExpList of Exp list
-		| Number of Constant
+		| CONST of Constant
   
 %pos int
 %start go
@@ -133,7 +133,9 @@ Statement	: LBRACE Statements RBRACE	(Block Statements1)
 			| 			ID LBRACKET Expr RBRACKET 	ASSIGN Expr SEMICOLON	(Assign(NONE		, ID1, SOME Expr1	, Expr2))
 			| Expr DOT 	ID LBRACKET Expr RBRACKET 	ASSIGN Expr SEMICOLON	(Assign(SOME Expr1	, ID1, SOME Expr2	, Expr3))
 
+			|			ID LPARA		 RPARA SEMICOLON	(CallStmt(This, ID1, []))
 			| 			ID LPARA ExpList RPARA SEMICOLON	(CallStmt(This, ID1, ExpList1))
+			| Expr DOT	ID LPARA		 RPARA SEMICOLON	(CallStmt(Expr1, ID1, []))
 			| Expr DOT 	ID LPARA ExpList RPARA SEMICOLON	(CallStmt(Expr1, ID1, ExpList1))
 
 			| IF LPARA Expr RPARA Statement					(If(Expr1, Statement1, Block []))
@@ -151,7 +153,7 @@ Statement	: LBRACE Statements RBRACE	(Block Statements1)
 ExpList	:	Expr						([Expr1])
 		|	Expr COMMA ExpList			(Expr1 :: ExpList1)
 
-Expr	: Number	(Const Number1)
+Expr	: CONST	(Const CONST1)
 
 		| Expr PLUS		Expr %prec PLUS 	(BINOP(ADD, Expr1, Expr2))
 		| Expr MINUS	Expr %prec MINUS 	(BINOP(SUB, Expr1, Expr2))
@@ -173,7 +175,9 @@ Expr	: Number	(Const Number1)
 		| Expr DOT LENGTH				(ArrayLength(Expr1))
 		
 		| Expr DOT	ID LPARA ExpList RPARA	(Call(Expr1, ID1, ExpList1))
+		| Expr DOT	ID LPARA		 RPARA	(Call(Expr1, ID1, []))
 		|			ID LPARA ExpList RPARA	(Call(This, ID1, ExpList1))
+		|			ID LPARA		 RPARA	(Call(This, ID1, []))
 
 		| Expr DOT ID	(Member(Expr1, ID1))
 
@@ -186,6 +190,6 @@ Expr	: Number	(Const Number1)
 
 		| THIS 								(This)
 
-Number	: NUMBER	(Cint NUMBER1)
+CONST	: NUMBER	(Cint NUMBER1)
 		| TRUE		(Cbool true)
 		| FALSE		(Cbool false)
