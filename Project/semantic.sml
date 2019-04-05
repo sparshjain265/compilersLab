@@ -16,6 +16,7 @@ fun prevLevel () = (level := (!level) - 1)
 val variableList : (ID * Type * int) list ref = ref []
 val functionList : (ID * Type * int) list ref = ref []
 
+val mainClass = ref ""
 val isMain = ref false
 val retType : Type option ref = ref NONE
 val isReturned = ref false
@@ -88,7 +89,10 @@ fun printType (basicType b) = (printBasic b; basicType b)
 	let
 		val t = (print id; objType id)
 	in
-		if AtomMap.inDomain(!classMap, Atom.atom id) then t else (isError := true; print_red " Unknown Type! "; t)
+		if AtomMap.inDomain(!classMap, Atom.atom id) then 
+			t 
+		else 
+			(isError := true; print_red " Unknown Type! "; t)
 	end
 |	printType voidType		= (print "void"; voidType)
 
@@ -123,14 +127,26 @@ fun printExp (Const c) 				= printConstant c
 				if t1 = (basicType Int) then
 					t1
 				else
-					(isError := true; print_red "Illegal Expression! Operation only allowed on integers"; basicType Int)
+					(
+						isError := true; 
+						print_red "Illegal Expression! Operation only allowed on integers"; 
+						basicType Int
+					)
 			else 
 				if t1 = (basicType Bool) then
 					t1
 				else
-					(isError := true; print_red "Illegal Expression! Operation only allowed on bools"; basicType Bool)
+					(
+						isError := true; 
+						print_red "Illegal Expression! Operation only allowed on bools"; 
+						basicType Bool
+					)
 		else
-			(isError := true; print_red "Type mismatch! Both operands should be of same type"; basicType Int)
+			(
+				isError := true; 
+				print_red "Type mismatch! Both operands should be of same type"; 
+				basicType Int
+			)
 	end
 |	printExp (RELOP(rop, e1, e2)) 	= 
 		let
@@ -144,9 +160,17 @@ fun printExp (Const c) 				= printConstant c
 				if t1 = (basicType Int) then
 					basicType Bool
 				else
-					(isError := true; print_red "Illegal Expression! Binary Comparisions only allowed on integers"; basicType Bool)
+					(
+						isError := true; 
+						print_red "Illegal Expression! Binary Comparisions only allowed on integers"; 
+						basicType Bool
+					)
 			else
-				(isError := true; print_red "Type mismatch! Both operands should be integers"; basicType Bool)
+				(
+					isError := true; 
+					print_red "Type mismatch! Both operands should be integers"; 
+					basicType Bool
+				)
 		end
 |	printExp (NOT(e)) 				= 
 		let
@@ -155,12 +179,20 @@ fun printExp (Const c) 				= printConstant c
 			if t = (basicType Bool) then
 				t
 			else
-				(isError := true; print_red "Type mismatch! Logical Not can only be applied on booleans"; basicType Bool)
+				(
+					isError := true; 
+					print_red "Type mismatch! Logical Not can only be applied on booleans"; 
+					basicType Bool
+				)
 		end
 |	printExp (ArrayElement(e1, e2))	= 
 		let
 			fun g (arrayType t) = t
-			|	g _				= (isError := true; print_red "Attempted to access element of a non array type!";Int)
+			|	g _				= (
+									isError := true; 
+									print_red "Attempted to access element of a non array type!";
+									Int
+								)
 			val t1 = g (printExp e1)
 			val p1 = print "["
 			val t2 = printExp e2
@@ -169,12 +201,20 @@ fun printExp (Const c) 				= printConstant c
 			if t2 = (basicType Int) then
 				basicType t1
 			else
-				(isError := true; print_red "Array Indices should be integers"; basicType t1)					
+				(
+					isError := true; 
+					print_red "Array Indices should be integers"; 
+					basicType t1
+				)					
 		end 
 |	printExp (ArrayLength(e)) 		= 
 		let
 			fun g (arrayType t) = arrayType t
-			|	g _				= (isError := true; print_red "Attempted to find length of non Array type!"; voidType)
+			|	g _				= (
+									isError := true; 
+									print_red "Attempted to find length of non Array type!"; 
+									voidType
+								)
 			val t = g (printExp e)
 			val p = print".length"
 		in
@@ -183,22 +223,41 @@ fun printExp (Const c) 				= printConstant c
 |	printExp (Call(e, id, eList)) 	=
 		let
 			fun g (objType ob) = ob
-			|	g _	= (isError := true; print_red "Attempted to call a function from a non-object!"; "this")
+			|	g _	= (
+						isError := true; 
+						print_red "Attempted to call a function from a non-object!"; 
+						"this"
+					)
 			val t1 = g (printExp e)
 			val tList = (print "."; print id; print "("; printExps eList)
 			val p1 = print ")"
 			fun f (a, _, _) = (a = id)
-			val funList = if t1 = "this" then SOME (!functionList) else AtomMap.find(!classMap, Atom.atom t1)
-			val t = if funList = NONE then NONE else List.find f (valOf funList)
+			val funList = 
+				if t1 = "this" then 
+					SOME (!functionList) 
+				else 
+					AtomMap.find(!classMap, Atom.atom t1)
+			val t = 
+				if funList = NONE then 
+					NONE 
+				else 
+					List.find f (valOf funList)
 		in
 			if t = NONE then
-				(isError := true; print_red "Attempted to call a non - defined function"; voidType)
+				(
+					isError := true; 
+					print_red "Attempted to call a non - defined function"; 
+					voidType
+				)
 			else
 				let
 					val (a, b, c) = valOf t
 					val fList = classFunMap.lookup(!functionMap, (Atom.atom t1, Atom.atom id))
 				in
-					if tList = fList then b else (isError := true; print_red "Formal Arguments don't match"; b)
+					if tList = fList then 
+						b 
+					else
+						(isError := true; print_red "Formal Arguments don't match"; b)
 				end
 		end 
 |	printExp (NewArray(b, e)) 		= (print "new "; printBasic b; print "["; printExp e; print "]"; arrayType b)
@@ -251,121 +310,101 @@ fun printStatement (Block xlist) =
 		print "}\n"
 	)
 |	printStatement (Assign(e1, id, e2, e)) = 
-	let
-		val p1 = printTabs()
-		val t1 = 
-			(		
-				let
-					val ex1 = if (isSome(e1)) then (Member((valOf e1), id)) else (Var id)
-					val ex2 = if (isSome(e2)) then ArrayElement(ex1, (valOf e2)) else ex1
-				in
-					printExp ex2
-				end
-			)
-
-		(* if(isSome(e1)) then (printExp(valOf e1); print ".") else ();
-		print id;
-		if(isSome(e2)) then (print "["; printExp(valOf e2); print "]") else (); *)
-
-		val p2 = print " = "
-		val t2 = printExp e
-		val p3 = print ";"
-	in
-		if (t1 = t2) then (print "\n") else (isError := true; print_red "Type Mismatch in assignment!\n")
-	end
-|	printStatement (CallStmt(e, id, elist)) = 
-	(* let *)
-	(
-		printTabs();
-		printExp (Call(e, id, elist));
-		print ";\n"
-	)
-		(* fun g (objType ob) = ob
-		|	g _	= (isError := true; print_red "Attempted to call a function from a non-object!"; "this")
-		val t1 = g (printExp e)
-		val tList = (print "."; print id; print "("; printExps eList)
-		val p1 = print ");\n"
-		fun f (a, _, _) = (a = id)
-		val funList = if t1 = "this" then SOME (!functionList) else AtomMap.find(!classMap, Atom.atom t1)
-		val t = if funList = NONE then NONE else List.find f (valOf funList)
-		
-		val fList = 
-			if (AtomMap.find(!functionMap, Atom.atom id) = NONE) then 
-				(isError := true; print_red "Attempted to Call a non-defined function!\n"; []) 
+		let
+			val p1 = printTabs()
+			val t1 = 
+				(		
+					let
+						val ex1 = if (isSome(e1)) then (Member((valOf e1), id)) else (Var id)
+						val ex2 = if (isSome(e2)) then ArrayElement(ex1, (valOf e2)) else ex1
+					in
+						printExp ex2
+					end
+				)
+			val p2 = print " = "
+			val t2 = printExp e
+			val p3 = print ";"
+		in
+			if (t1 = t2) then 
+				(print "\n") 
 			else 
-				(valOf (AtomMap.find(!functionMap, Atom.atom id)))
-	in
-		if tList = fList then () else (isError := true; print_red "Formal Arguments Don't Match!\n")
-	end *)
-|	printStatement (If(e, s1, Block [])) = 
-	let
-		val p1 = (printTabs(); print "if(")
-		val t = printExp e
-		fun f (Block _) = printStatement s1
-		|	f _			= (more(); printStatement s1; less())
-		val p2 = (print ") then\n";	f s1)
-	in
-		if (t = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
-	end
-|	printStatement (If(e, s1, s2)) = 
-	let
-		val p1 = (printTabs(); print "if(")
-		val t1 = printExp e
-
-		fun f (Block x) = printStatement (Block x)
-		|	f s			= (more(); printStatement s; less())
-
-		val p3 = 
+				(isError := true; print_red "Type Mismatch in assignment!\n")
+		end
+|	printStatement (CallStmt(e, id, elist)) = 
 		(
-			print ") then\n";
-			f s1;
 			printTabs();
-			print "else";
-			f s2
+			printExp (Call(e, id, elist));
+			print ";\n"
 		)
-	in
-		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
-	end
+|	printStatement (If(e, s1, Block [])) = 
+		let
+			val p1 = (printTabs(); print "if(")
+			val t = printExp e
+			fun f (Block _) = printStatement s1
+			|	f _			= (more(); printStatement s1; less())
+			val p2 = (print ") then\n";	f s1)
+		in
+			if (t = basicType Bool) then () 
+			else (isError := true; print_red "Condition not of bool type!\n")
+		end
+|	printStatement (If(e, s1, s2)) = 
+		let
+			val p1 = (printTabs(); print "if(")
+			val t1 = printExp e
+			fun f (Block x) = printStatement (Block x)
+			|	f s			= (more(); printStatement s; less())
+			val p3 = 
+			(
+				print ") then\n";
+				f s1;
+				printTabs();
+				print "else";
+				f s2
+			)
+		in
+			if (t1 = basicType Bool) then () 
+			else (isError := true; print_red "Condition not of bool type!\n")
+		end
 |	printStatement (While(e, s)) = 
-	let
-		val p1 = (printTabs(); print "while(")
-		val t1 = printExp e
-		fun f (Block _) = printStatement s
-		|	f _			= (more(); printStatement s; less())
-
-		val p2 = 
-		(
-			print ")\n";
-			f s
-		)
-	in
-		if (t1 = basicType Bool) then () else (isError := true; print_red "Condition not of bool type!\n")
-	end
+		let
+			val p1 = (printTabs(); print "while(")
+			val t1 = printExp e
+			fun f (Block _) = printStatement s
+			|	f _			= (more(); printStatement s; less())
+			val p2 = 
+			(
+				print ")\n";
+				f s
+			)
+		in
+			if (t1 = basicType Bool) then () 
+			else (isError := true; print_red "Condition not of bool type!\n")
+		end
 |	printStatement (PrintE e) = 
-	(
-		printTabs();
-		print "System.out.println(";
-		printExp e;
-		print ");\n"
-	)
+		(
+			printTabs();
+			print "System.out.println(";
+			printExp e;
+			print ");\n"
+		)
 |	printStatement (PrintS str) = 
-	(
-		printTabs();
-		print "System.out.println(\"";
-		print str;
-		print "\");\n"
-	)
+		(
+			printTabs();
+			print "System.out.println(\"";
+			print str;
+			print "\");\n"
+		)
 |	printStatement (Return e) = 
-	let
-		val p1 = (printTabs(); print "return")
-		val t1 = if(isSome(e)) then (print " "; printExp(valOf e)) else (voidType);
-		val p2 = print ";"
-	in
-		if t1 = valOf (!retType) then 
-			(print "\n"; isReturned := true) 
-		else
-			(isError := true; print_red "Doesn't match with function return type!\n")
-	end
+		let
+			val p1 = (printTabs(); print "return")
+			val t1 = if(isSome(e)) then (print " "; printExp(valOf e)) else (voidType);
+			val p2 = print ";"
+		in
+			if t1 = valOf (!retType) then 
+				(print "\n"; isReturned := true) 
+			else
+				(isError := true; print_red "Doesn't match with function return type!\n")
+		end
 
 fun printVarDec (VarDec(typ, id, exp)) = 
 	let
@@ -412,7 +451,10 @@ fun printFormals className id [] 		= (functionMap := classFunMap.insert(!functio
 
 fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) = 
 	(
-		if !isMain then (isError := true; printTabs(); print_red "Exactly one main function is allowed!\n") else (isMain := true);
+		if !isMain then 
+			(isError := true; printTabs(); print_red "Exactly one main function is allowed!\n") 
+		else 
+			(isMain := true; mainClass := className);
 		retType := SOME typ;
 		isReturned := false;
 		if typ = voidType then (isReturned := true) else ();
@@ -514,8 +556,6 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 		levelDown()
 	)
 
-fun printProgram (Program x) = (map printClassDec x; if (!isMain) then !isError else (isError := true; print_red "No main detected!\n"; !isError))
-
-(* fun compileProgram x = printProgram x *)
+fun checkProgram (Program x) = (map printClassDec x; if (!isMain) then !isError else (isError := true; print_red "No main detected!\n"; !isError))
 
 end
