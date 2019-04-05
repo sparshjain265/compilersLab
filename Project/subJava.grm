@@ -120,7 +120,7 @@ Formal	: Type ID (Formal(Type1, ID1))
 
 Type	: BType						(basicType BType1)
 		| BType LBRACKET RBRACKET 	(arrayType BType1)
-		| CLASS ID					(objType ID1)
+		| ID						(objType ID1)
 		| VOID						(voidType)
 
 BType	: BOOL	(Bool)

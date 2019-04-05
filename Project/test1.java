@@ -2,7 +2,7 @@ class A {
 	int a;
 	public int b(int k)
 	{
-		// return 0; 
+		return 0; 
 	}
 }
 
@@ -10,10 +10,10 @@ class A {
 class test01 { 
 	int c;
 
-	public int myFun(int a)
+	public int myFun(int a, boolean c)
 	{
 		int k;
-		int a = k;
+		int b = k;
 		return 0;
 	}
 
@@ -22,21 +22,27 @@ class test01 {
 		return 0;
 	}
 
-	public static void main(String[] a) {
-		class A test = new A();
+	public void d()
+	{
+		return 0;
+	}
+
+	public static void main(String[] args) {
+		A a = new A();
 		int bsharp;
-		int a;
-		if(a < 0)
-			a = 5;
-		while(true && a < b())
+		int b;
+		
+		if(b < 0)
+			b = 5;
+		while(true && b < b())
 		{
 			a = a;
-			a = b();
+			b = b();
 		}
-		test = new A();
+		a = new A();
 		System.out.println("TEST01"); 
 		System.out.println(123); 
-		System.out.println(test.b(a)); 
+		System.out.println(a.b(b)); 
 		System.out.println(true); 
 	} 
 }

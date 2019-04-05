@@ -368,22 +368,32 @@ fun printVarDec (VarDec(typ, id, exp)) =
 		val p2 = (print " "; print id)
 		val t2 = if(isSome(exp)) then (print " = "; printExp(valOf exp)) else (typ)
 		val p3 = print ";"
-		val v1 = (variableList := (id, typ, (!level)) :: (!variableList))
+		fun f (x, _, l) = x = id andalso l = !level
+		val v1 =
+			if List.exists f (!variableList) then
+				(isError := true; print_red "Redeclaration of variable!\n")
+			else
+				(variableList := (id, typ, (!level)) :: (!variableList))
 	in
 		if(t1 = t2) then (print "\n") else (isError := true; print_red "Type Mismatch in assignment!\n")
 	end
 
 fun printFormal (Formal(typ, id)) = 
-	(
-		printType typ;
-		print " ";
-		print id;
-		(variableList := (id, typ, (!level)) :: (!variableList))
-	)
+	let
+		val p1 = (printType typ; print " ";	print id)
+		fun f (x, _, l) = x = id andalso l = !level
+	in
+		if List.exists f (!variableList) then
+			(isError := true; print_red "Using same name for different arguments!")
+		else
+			(variableList := (id, typ, (!level)) :: (!variableList))
+	end
 
 fun mapFormal className id (Formal(typ, _)) = 
 	let
-		val temp = if classFunMap.inDomain(!functionMap, (Atom.atom className, Atom.atom id)) then classFunMap.lookup(!functionMap, (Atom.atom className, Atom.atom id)) else []
+		val temp = 	if classFunMap.inDomain(!functionMap, (Atom.atom className, Atom.atom id)) then 
+						classFunMap.lookup(!functionMap, (Atom.atom className, Atom.atom id)) 
+					else []
 	in
 		(functionMap := classFunMap.insert(!functionMap, (Atom.atom className, Atom.atom id), typ :: temp);
 		functionMap := classFunMap.insert(!functionMap, (Atom.atom "this", Atom.atom id), classFunMap.lookup(!functionMap, (Atom.atom className, Atom.atom id))))
@@ -398,7 +408,18 @@ fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) =
 	(
 		printTabs();
 		print "public static void main(";
-		(functionList := ("main", voidType, (!level)) :: (!functionList));
+		let
+			val id = "main"
+			fun f (x, _, l) = x = id andalso l = !level
+		in 
+			if List.exists f (!variableList) then
+				(isError := true; print_red "Cannot use a declared variable name as a function name!")
+			else
+				if List.exists f (!functionList) then
+					(isError := true; print_red "Function Overloading not allowed!")
+				else
+					(functionList := (id, typ, (!level)) :: (!functionList))
+		end;
 		levelUp ();
 		printFormals className "main" flist;
 		print ")\n";
@@ -419,7 +440,17 @@ fun printMethodDec className (MethodDec(typ, "main", flist, vlist, slist)) =
 		printType typ;
 		print " ";
 		print id;
-		(functionList := (id, typ, (!level)) :: (!functionList));
+		let
+			fun f (x, _, l) = x = id andalso l = !level
+		in 
+			if List.exists f (!variableList) then
+				(isError := true; print_red "Cannot use a declared variable name as a function name!")
+			else
+				if List.exists f (!functionList) then
+					(isError := true; print_red "Function Overloading not allowed!")
+				else
+					(functionList := (id, typ, (!level)) :: (!functionList))
+		end;
 		print "(";
 		levelUp();
 		printFormals className id flist;
