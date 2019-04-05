@@ -34,7 +34,15 @@ structure classFunMap = RedBlackMapFn(funKey)
 val functionMap : (Type list) classFunMap.map ref = ref classFunMap.empty
 
 val classList : ID list ref = ref []
-val classMap : ((ID * Type * int) list) AtomMap.map ref = ref AtomMap.empty
+val classMap : ((ID * Type * int) list) AtomMap.map ref = 
+	ref (
+			AtomMap.insert
+			(
+				AtomMap.singleton(Atom.atom "this", []), 
+				Atom.atom "String", 
+				[]
+			)
+		)
 
 fun deleteFunLevel L = 
 	if List.null (!functionList) then
@@ -74,7 +82,12 @@ fun printBasic Bool = (print "bool"; basicType Bool)
 
 fun printType (basicType b) = (printBasic b; basicType b)
 |	printType (arrayType b) = (printBasic b; print "[]"; arrayType b)
-|	printType (objType id)	= (print "class "; print id; objType id)
+|	printType (objType id)	= 
+	let
+		val t = (print id; objType id)
+	in
+		if AtomMap.inDomain(!classMap, Atom.atom id) then t else (isError := true; print_red " Unknown Type! "; t)
+	end
 |	printType voidType		= (print "void"; voidType)
 
 fun printBinop ADD = print "+"
@@ -454,7 +467,7 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 		levelDown()
 	)
 
-fun printProgram (Program x) = map printClassDec x
+fun printProgram (Program x) = (map printClassDec x; !isError)
 
 (* fun compileProgram x = printProgram x *)
 

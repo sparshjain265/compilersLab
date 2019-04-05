@@ -1,5 +1,3 @@
-/*
-/*
 class A {
 	int a;
 	public int b(int k)
@@ -7,7 +5,7 @@ class A {
 		// return 0; 
 	}
 }
-*/
+
 
 class test01 { 
 	int c;
@@ -25,7 +23,7 @@ class test01 {
 	}
 
 	public static void main(String[] a) {
-		class A test;
+		class A test = new A();
 		int bsharp;
 		int a;
 		if(a < 0)
@@ -35,10 +33,10 @@ class test01 {
 			a = a;
 			a = b();
 		}
-			
+		test = new A();
 		System.out.println("TEST01"); 
 		System.out.println(123); 
-		System.out.println(); 
+		System.out.println(test.b(a)); 
 		System.out.println(true); 
 	} 
 }
