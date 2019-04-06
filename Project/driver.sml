@@ -31,10 +31,15 @@ fun print_error (s,i:int, j:int) = TextIO.output(TextIO.stdErr,
 val (program,_) = subJavaParser.parse (0,thisLexer,print_error,())
 val check  = Semantic.checkProgram program
 
-val os = TextIO.openOut (!oFile)
+structure os : OSTREAMIN = 
+struct
+  val os = TextIO.openOut (!oFile)
+end
 
-val gen = if check then () else codeGen.generate os program
+structure codeGenerator = codeGen (os)
 
-val oclose = TextIO.closeOut os
+val gen = if check then () else codeGenerator.generate program
+
+val oclose = TextIO.closeOut os.os
 
 end (* struct Driver *)

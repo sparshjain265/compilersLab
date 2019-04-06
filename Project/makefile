@@ -9,7 +9,7 @@ all       : compiler
 clean     : 
 			rm -rf *.lex.sml *.grm.sml *.grm.sig *.grm.desc compiler
 
-compiler	: printColor.sml printer.sml semantic.sml codeGen.sml subJava.grm subJava.grm.sml subJava.lex subJava.lex.sml driver.sml compiler.mlb
+compiler	: signatures.sig printColor.sml printer.sml semantic.sml codeGen.sml subJava.grm subJava.grm.sml subJava.lex subJava.lex.sml driver.sml compiler.mlb
 				mlton compiler.mlb
 
 test : all 
