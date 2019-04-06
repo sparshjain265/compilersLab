@@ -36,7 +36,7 @@ class test01 {
 		if(b < 0)
 			b = 5;
 
-		// a = new A();
+		a = new A();
 		System.out.println("TEST01"); 
 		System.out.println(123); 
 		System.out.println(a.b(b)); 
