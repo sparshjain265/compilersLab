@@ -17,9 +17,12 @@ structure subJavaParser =
 fun makesubJavaLexer strm = subJavaParser.makeLexer (fn n => TextIO.inputN(strm,n))
 val makeFileLexer      = makesubJavaLexer o TextIO.openIn
 
+val oFile = ref "a.js"
+
 val thisLexer = case CommandLine.arguments() of
 		    []  => makesubJavaLexer TextIO.stdIn
 		 |  [x] => makeFileLexer x
+     |  [x, y] => (oFile := y; makeFileLexer x)
 		 |  _   => (TextIO.output(TextIO.stdErr, "usage: driver file"); OS.Process.exit OS.Process.failure)
 
 fun print_error (s,i:int, j:int) = TextIO.output(TextIO.stdErr,
@@ -27,5 +30,11 @@ fun print_error (s,i:int, j:int) = TextIO.output(TextIO.stdErr,
 
 val (program,_) = subJavaParser.parse (0,thisLexer,print_error,())
 val check  = Semantic.checkProgram program
+
+val os = TextIO.openOut (!oFile)
+
+val gen = if check then () else codeGen.generate os program
+
+val oclose = TextIO.closeOut os
 
 end (* struct Driver *)

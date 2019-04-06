@@ -2,13 +2,13 @@ class A {
 	int a;
 	public int b(int k)
 	{
-		return 0; 
+		return 1; 
 	}
 }
 
 
 class test01 { 
-	int c;
+	int c = 0;
 
 	public boolean myFun(int a, boolean c)
 	{
@@ -18,7 +18,7 @@ class test01 {
 
 	public int b()
 	{
-		return 0;
+		return 1;
 	}
 
 	public void d()
@@ -27,23 +27,22 @@ class test01 {
 	}
 
 	public static void main(String[] args) {
-		A a;
+		A a = new A();
 		int[] bsharp = new int[3];
 		int b;
+		bsharp[0] = 100;
+		
 		
 		if(b < 0)
 			b = 5;
-		while(true && b < b())
-		{
-			// a.b = a.b;
-			b = b();
-		}
+
 		// a = new A();
 		System.out.println("TEST01"); 
 		System.out.println(123); 
 		System.out.println(a.b(b)); 
 		System.out.println(bsharp[0]);
 		System.out.println(true); 
+		System.out.println(c);
 	} 
 }
 

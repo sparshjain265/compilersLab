@@ -6,6 +6,7 @@ printColor.sml
 ast.sml
 printer.sml
 semantic.sml
+codeGen.sml
 subJava.grm.sig
 subJava.grm.sml
 subJava.lex.sml 
