@@ -106,6 +106,12 @@ fun printType x =
 	else
 		(fprint (!oStream)  "var"; x)
 
+fun consOfType (basicType Bool) = " = true"
+|	consOfType (basicType Int)	= " = 0"
+|	consOfType (arrayType _)	= " = []"
+|	consOfType (objType id)		= " = new " ^ id ^ "()"
+|	consOfType (voidType)		= ""
+
 fun printBinop ADD = fprint (!oStream)  "+"
 |	printBinop SUB = fprint (!oStream)  "-"
 |	printBinop MUL = fprint (!oStream)  "*"
@@ -424,7 +430,7 @@ fun printVarDec (VarDec(typ, id, exp)) =
 		val p1 = printTabs()
 		val t1 = printType typ
 		val p2 = (fprint (!oStream)  " "; fprint (!oStream)  id)
-		val t2 = if(isSome(exp)) then (fprint (!oStream)  " = "; printExp(valOf exp)) else (typ)
+		val t2 = if(isSome(exp)) then (fprint (!oStream)  " = "; printExp(valOf exp)) else (fprint (!oStream) (consOfType(typ)); typ)
 		val p3 = fprint (!oStream)  ";"
 		fun f (x, _, l) = x = id andalso l = !level
 		val v1 =

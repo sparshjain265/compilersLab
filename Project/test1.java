@@ -27,7 +27,7 @@ class test01 {
 	}
 
 	public static void main(String[] args) {
-		A a = new A();
+		A a;
 		int[] bsharp = new int[3];
 		int b;
 		bsharp[0] = 100;
