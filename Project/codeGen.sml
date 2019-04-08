@@ -13,6 +13,7 @@ val n = ref 0
 fun print_t () = if !n = 0 then ( fprint oStream ("")) else (n := !n - 1 ; fprint oStream  ("\t") ; print_t ())
 fun printTabs () = (n := !indent ; print_t () )
 
+val isThis = ref false;
 val isError = ref false;
 val level = ref 0;
 fun nextLevel () = (level := (!level) + 1)
@@ -83,22 +84,6 @@ fun levelDown () =
 	end
 
 (* Printing *)
-
-(* fun printBasic Bool = (fprint oStream  "bool"; basicType Bool)
-|	printBasic Int	= (fprint oStream  "int"; basicType Int)
-
-fun printType (basicType b) = (printBasic b; basicType b)
-|	printType (arrayType b) = (printBasic b; fprint oStream  "[]"; arrayType b)
-|	printType (objType id)	= 
-	let
-		val t = (fprint oStream  id; objType id)
-	in
-		if AtomMap.inDomain(!classMap, Atom.atom id) then 
-			t 
-		else 
-			(isError := true; print_red " Unknown Type! "; t)
-	end
-|	printType voidType		= (fprint oStream  "void"; voidType) *)
 
 fun printType x = 
 	if !level = 1 then
@@ -280,7 +265,7 @@ fun printExp (Const c) 				= printConstant c
 |	printExp (NewObject(id)) 		= (fprint oStream  "new "; fprint oStream  id; fprint oStream "()"; objType id)
 |	printExp (Member(e, id)) 		= 
 		let
-			val t = (printExp e; fprint oStream  "."; printExp (Var(id)))
+			val t = (printExp e; fprint oStream  "."; isThis := true; printExp (Var(id)))
 		in
 			if e = This then
 				(t)
@@ -303,7 +288,10 @@ fun printExp (Const c) 				= printConstant c
 					if c = 2 then
 						(fprint oStream  a; b)
 					else
-						(fprint oStream  "this."; fprint oStream  a; b)
+						if !isThis then
+							(fprint oStream a; isThis := false; b)
+						else
+							(fprint oStream  "this."; fprint oStream  a; b)
 				end
 		end 
 
