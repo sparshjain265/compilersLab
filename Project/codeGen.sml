@@ -349,7 +349,7 @@ fun printStatement (Block xlist) =
 			val t = printExp e
 			fun f (Block _) = printStatement s1
 			|	f _			= (more(); printStatement s1; less())
-			val p2 = (fprint oStream  ") then\n";	f s1)
+			val p2 = (fprint oStream  ")";	f s1)
 		in
 			if (t = basicType Bool) then () 
 			else (isError := true; print_red "Condition not of bool type!\n")
@@ -362,10 +362,10 @@ fun printStatement (Block xlist) =
 			|	f s			= (more(); printStatement s; less())
 			val p3 = 
 			(
-				fprint oStream  ") then\n";
+				fprint oStream  ")\n";
 				f s1;
 				printTabs();
-				fprint oStream  "else";
+				fprint oStream  "else\n";
 				f s2
 			)
 		in
