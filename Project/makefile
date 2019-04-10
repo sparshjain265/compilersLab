@@ -13,4 +13,4 @@ compiler	: signatures.sig printColor.sml printer.sml semantic.sml codeGen.sml su
 				mlton compiler.mlb
 
 test : all 
-	 ${CURDIR}/compiler test1.java test1.js
+	 ${CURDIR}/compiler test.java test.js

@@ -1,4 +1,6 @@
 class MyClass {
+  int n;
+
   public int factorial(int n)
   {
     if(n == 1) 
@@ -8,7 +10,7 @@ class MyClass {
   }
 
   public static void main(String[] args) {
-    int n = 10;
+    n = 10;
     System.out.println(factorial(n)); 
   }
 }

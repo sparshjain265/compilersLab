@@ -87,9 +87,9 @@ fun levelDown () =
 
 fun printType x = 
 	if !level = 1 then
-		(fprint oStream  ""; x)
+		(fprint oStream  "this."; x)
 	else
-		(fprint oStream  "var"; x)
+		(fprint oStream  "var "; x)
 
 fun consOfType (basicType Bool) = " = true"
 |	consOfType (basicType Int)	= " = 0"
@@ -390,16 +390,16 @@ fun printStatement (Block xlist) =
 |	printStatement (PrintE e) = 
 		(
 			printTabs();
-			fprint oStream  "document.write((";
+			fprint oStream  "console.log(";
 			printExp e;
-			fprint oStream  ") + \"<br>\");\n"
+			fprint oStream  ");\n"
 		)
 |	printStatement (PrintS str) = 
 		(
 			printTabs();
-			fprint oStream  "document.write(\"";
+			fprint oStream  "console.log(\"";
 			fprint oStream  str;
-			fprint oStream  "\" + \"<br>\");\n"
+			fprint oStream  "\");\n"
 		)
 |	printStatement (Return e) = 
 		let
@@ -417,7 +417,7 @@ fun printVarDec (VarDec(typ, id, exp)) =
 	let
 		val p1 = printTabs()
 		val t1 = printType typ
-		val p2 = (fprint oStream  " "; fprint oStream  id)
+		val p2 = (fprint oStream  id)
 		val t2 = if(isSome(exp)) then (fprint oStream  " = "; printExp(valOf exp)) else (fprint oStream (consOfType(typ)); typ)
 		val p3 = fprint oStream  ";"
 		fun f (x, _, l) = x = id andalso l = !level
@@ -555,7 +555,15 @@ fun printClassDec (ClassDec (id, varDecList, methodDecList)) =
 		fprint oStream  "{\n";
 		more();
 		levelUp();
+		printTabs();
+		fprint oStream  "constructor()\n";
+		printTabs();
+		fprint oStream  "{\n";
+		more();
 		map printVarDec varDecList;
+		less();
+		printTabs();
+		fprint oStream  "}\n";
 		printMethodDecs id methodDecList;
 		less();
 		printTabs();
