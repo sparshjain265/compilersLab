@@ -1,0 +1,8 @@
+.vscode
+*.js
+*.lex.sml
+*.grm.sml
+*.grm.sig
+*.grm.desc
+compiler
+*.json
