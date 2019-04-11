@@ -6,3 +6,4 @@
 *.grm.desc
 compiler
 *.json
+*.cm
