@@ -1,5 +1,5 @@
 # 111601026-compiler-lab
-Private repository for Compiler Lab
+Repository for Compiler Lab
 
 Name: Sparsh Jain
 
